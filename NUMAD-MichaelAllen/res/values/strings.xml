@@ -12,7 +12,16 @@
     <string name="create_error_label">Create Error</string>
     <string name="sudoku_button_label">Play Sudoku</string>
     
-	<string name="main_title">Android Sudoku</string>
+    <string name="boggle_main_label">Play Boggle</string>
+    <string name="boggle_main_title">Boggle</string>
+    <string name="boggle_new_game_label">New Game</string>
+    <string name="boggle_options_label">Options</string>
+    <string name="boggle_options_title">Boggle settings</string>
+    <string name="boggle_game_title">Boggle!</string>
+    <string name="boggle_timer_start">3:00</string>
+    <string name="boggle_game_quit">Quit</string>
+    
+   <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>
    <string name="new_game_label">New Game</string>
    <string name="about_label">About</string>
