@@ -32,15 +32,31 @@
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.boggle.BoggleMain"
-            android:label="@string/boggle_main_title"> 
-        </activity>
-        <activity
-            android:name="edu.neu.madcourse.michaelallen.boggle.BogglePrefs"
-            android:label="@string/boggle_options_title">
+            android:label="@string/boggle_main_title"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait"> 
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.boggle.BoggleGame"
-            android:label="@string/boggle_game_title">
+            android:label="@string/boggle_game_title"
+            android:configChanges="orientation"
+   			android:screenOrientation="portrait">
+        </activity>
+        <activity 
+            android:name="edu.neu.madcourse.michaelallen.boggle.BoggleScoreScreen"
+            android:label="@string/boggle_score_screen_title"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.boggle.BoggleAcknowledgements"
+            android:label="@string/boggle_acknowledgements_title"
+            android:theme="@android:style/Theme.Dialog">
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.boggle.BoggleHS"
+            android:label="@string/boggle_high_scores_label"
+            android:theme="@android:style/Theme.Dialog">
         </activity>
         <activity android:name="edu.neu.madcourse.michaelallen.sudoku.Sudoku"
               android:label="@string/sudoku_title">

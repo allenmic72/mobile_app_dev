@@ -12,6 +12,7 @@ import android.widget.RelativeLayout;
 
 public class BoggleMain extends Activity implements OnClickListener{
 
+	View continueButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {    	
     	super.onCreate(savedInstanceState);
@@ -22,23 +23,34 @@ public class BoggleMain extends Activity implements OnClickListener{
         View newGameButton = findViewById(R.id.boggle_new_game_button);
         newGameButton.setOnClickListener(this);
         
-        View optionsButton = findViewById(R.id.boggle_options_button);
-        optionsButton.setOnClickListener(this);
+        View acknowledgementsButton = findViewById(R.id.boggle_acknowledgements_button);
+        acknowledgementsButton.setOnClickListener(this);
         
+        continueButton = findViewById(R.id.boggle_continue_button);
+        continueButton.setOnClickListener(this);
+        
+        View highScoresButton = findViewById(R.id.boggle_high_scores);
+        highScoresButton.setOnClickListener(this);
+                
         
     }
     
     @Override
     protected void onResume() {
        super.onResume();
-       BoggleMusic.play(this, R.raw.main);
-       //TODO: Change the music
+       
+       if (Globals.getGlobals().newGameStarted()){
+    	   continueButton.setVisibility(View.VISIBLE);
+       }
+       else{
+    	   continueButton.setVisibility(View.INVISIBLE);
+       }
     }
 
     @Override
     protected void onPause() {
        super.onPause();
-       BoggleMusic.stop(this);
+       //BoggleMusic.stop(this);
     }
 
     
@@ -52,10 +64,23 @@ public class BoggleMain extends Activity implements OnClickListener{
 		 case R.id.boggle_new_game_button:
 			 Intent boggleGame = new Intent(this, BoggleGame.class);
 			 startActivity(boggleGame);
+			 Globals.getGlobals().setNewGame(true);
 			 break;
-		 case R.id.boggle_options_button:
-			 Intent boggleOptions = new Intent(this, BogglePrefs.class);
-			 startActivity(boggleOptions);
+		 case R.id.boggle_acknowledgements_button:
+			 Intent boggleack = new Intent(this, BoggleAcknowledgements.class);
+			 startActivity(boggleack);
+			 break;
+		 case R.id.boggle_continue_button:
+			 if(Globals.getGlobals().newGameStarted()){
+				 Intent continueGame = new Intent(this, BoggleGame.class);
+				 continueGame.putExtra("edu.neu.madcourse.michaelallen.boggle.resume", 1);
+				 startActivity(continueGame);
+			 }
+			 break;
+		 case R.id.boggle_high_scores:
+			 Intent boggleHS = new Intent(this, BoggleHS.class);
+			 startActivity(boggleHS);
+			 break;
 		 }
 		
 	}

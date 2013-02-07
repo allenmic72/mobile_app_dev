@@ -21,21 +21,20 @@ public class Team extends Activity implements OnClickListener{
 		
 		 View IdButton = findViewById(R.id.phoneId_button);
 		 IdButton.setOnClickListener(this);
-	   
+		 
+		 View exitButton = findViewById(R.id.team_exit_button);
+		 exitButton.setOnClickListener(this);
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_team, menu);
-		return true;
-	}
 
 	@Override
 	public void onClick(View v) {
 		 switch (v.getId()) {
 		 case R.id.phoneId_button:     
 				openPhoneIdDialog();
+			 break;
+		 case R.id.team_exit_button:
+			 finish();
 			 break;
 		 }
 		

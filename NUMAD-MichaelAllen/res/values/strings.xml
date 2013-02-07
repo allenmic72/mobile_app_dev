@@ -13,13 +13,31 @@
     <string name="sudoku_button_label">Play Sudoku</string>
     
     <string name="boggle_main_label">Play Boggle</string>
-    <string name="boggle_main_title">Boggle</string>
+    <string name="boggle_main_title">B  O  G  G  L  E</string>
     <string name="boggle_new_game_label">New Game</string>
-    <string name="boggle_options_label">Options</string>
-    <string name="boggle_options_title">Boggle settings</string>
+    <string name="boggle_acknowledgements_label">Acknowledgements</string>
     <string name="boggle_game_title">Boggle!</string>
     <string name="boggle_timer_start">3:00</string>
     <string name="boggle_game_quit">Quit</string>
+    <string name="boggle_score_screen_title">Game Stats</string>
+    <string name="boggle_main_screen_text">Return to Main</string>
+    <string name="boggle_continue_button_label">Continue Game</string>
+    <string name="boggle_pause_text">Pause</string>
+    <string name="boggle_resume_text">Resume</string>
+    <string name="boggle_acknowledgements_title">Acknowledgements</string>
+    <string name="acknowledgements_text">
+        1. Sources: The three mp3 files I use for sound effects were from some forum
+        I found by googling sound effects. The forum link is http://modmyi.com/forums
+        I dont have the link to the exact thread, though   \n                                
+        
+        2. Code: I dont recall using any code directly, 
+        except an XML for a gradient background which I found on stackoverflow   \n               
+        
+        3. People: Thanks to Prof Intille and Mansoor. 
+        Also, thanks to my fellow classmates who contributed on Piazza.
+        I got my inspiration for the method of splitting the dictionary by prefix through Piazza
+    </string>
+    <string name="boggle_high_scores_label">High Scores</string>
     
    <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="my_background">#447799</color>
+    <color name="my_background">#99447799</color>
     <color name="team_background">#447799</color>
     <color name="puzzle_background">#ffe6f0ff</color>
    <color name="puzzle_hilite">#ffffffff</color>
@@ -12,5 +12,8 @@
    <color name="puzzle_hint_2">#2000ff80</color>
    <color name="puzzle_selected">#64ff8000</color>
    <color name="background">#5555eeee</color>
+   <color name="boggle_correctWord">#3566FF33</color>
+   <color name="boggle_incorrectWord">#35FF3333</color>
+   <color name="boggle_main">#7F634714</color>
     
 </resources>
