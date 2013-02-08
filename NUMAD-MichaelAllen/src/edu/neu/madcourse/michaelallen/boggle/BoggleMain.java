@@ -31,7 +31,9 @@ public class BoggleMain extends Activity implements OnClickListener{
         
         View highScoresButton = findViewById(R.id.boggle_high_scores);
         highScoresButton.setOnClickListener(this);
-                
+       
+        View boggleRulesButton = findViewById(R.id.boggle_rules_button);
+        boggleRulesButton.setOnClickListener(this);
         
     }
     
@@ -80,6 +82,10 @@ public class BoggleMain extends Activity implements OnClickListener{
 		 case R.id.boggle_high_scores:
 			 Intent boggleHS = new Intent(this, BoggleHS.class);
 			 startActivity(boggleHS);
+			 break;
+		 case R.id.boggle_rules_button:
+			 Intent boggleRules = new Intent(this, BoggleRules.class);
+			 startActivity(boggleRules);
 			 break;
 		 }
 		

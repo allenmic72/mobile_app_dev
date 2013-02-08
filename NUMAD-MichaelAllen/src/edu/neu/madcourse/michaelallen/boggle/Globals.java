@@ -20,7 +20,7 @@ public class Globals{
 	
 	private boolean newGame = false;
 	
-	private long timerVal = 180;
+	private long timerVal = 120;
 	
 	private CountDownTimer gameTimer;
 	
@@ -153,7 +153,7 @@ public class Globals{
 		boardLetters = new String[4][4];
 		score = 0;
 		priorChosenWords = new ArrayList<String>();
-		timerVal = 180; 
+		timerVal = 120; 
 		gameTimer = null;
 		isPaused = false;
 	}

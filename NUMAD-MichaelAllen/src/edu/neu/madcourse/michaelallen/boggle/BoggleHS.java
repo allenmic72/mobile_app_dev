@@ -12,18 +12,22 @@ import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 
-public class BoggleHS extends Activity{
+public class BoggleHS extends Activity implements OnClickListener{
 	
 	private ListView listv ; 
 	protected void onCreate(Bundle savedInstanceState) {    	
     	super.onCreate(savedInstanceState);
     	setContentView(R.layout.boggle_hs);
+    	
+    	View hsQuit = findViewById(R.id.boggle_hs_quit);
+    	hsQuit.setOnClickListener(this);
     	
     	ListView listv = (ListView) findViewById(R.id.boggle_hs_view);
     	 
@@ -67,6 +71,16 @@ public class BoggleHS extends Activity{
 		else{
 			BoggleHighScores hs = gson.fromJson(oldHS, BoggleHighScores.class);
 			return hs.highscores;
+		}
+		
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch(v.getId()){
+		case R.id.boggle_hs_quit:
+			finish();
+			break;
 		}
 		
 	}

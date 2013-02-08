@@ -49,14 +49,16 @@
     		android:screenOrientation="portrait">
         </activity>
         <activity
+            android:name="edu.neu.madcourse.michaelallen.boggle.BoggleRules"
+            android:label="@string/boggle_rules_label">
+        </activity>
+        <activity
             android:name="edu.neu.madcourse.michaelallen.boggle.BoggleAcknowledgements"
-            android:label="@string/boggle_acknowledgements_title"
-            android:theme="@android:style/Theme.Dialog">
+            android:label="@string/boggle_acknowledgements_title">
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.boggle.BoggleHS"
-            android:label="@string/boggle_high_scores_label"
-            android:theme="@android:style/Theme.Dialog">
+            android:label="@string/boggle_high_scores_label">
         </activity>
         <activity android:name="edu.neu.madcourse.michaelallen.sudoku.Sudoku"
               android:label="@string/sudoku_title">

@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="45dip"
-    android:background="@drawable/score_scrn_gradient">"
+    android:background="@drawable/score_scrn_gradient">
     
     <TextView
         android:id="@+id/boggle_score_textview"

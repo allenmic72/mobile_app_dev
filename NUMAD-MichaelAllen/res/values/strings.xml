@@ -6,7 +6,7 @@
     <string name="my_name">Michael Allen</string>
     <string name="my_email">allen.mic@husky.neu.edu</string>
     <string name="menu_settings">Settings</string>
-    <string name="team_label">Team Members</string>
+    <string name="team_label">About</string>
     <string name="title_activity_team">Team Members</string>
     <string name="phoneId_label">Get Phone ID</string>
     <string name="create_error_label">Create Error</string>
@@ -26,18 +26,26 @@
     <string name="boggle_resume_text">Resume</string>
     <string name="boggle_acknowledgements_title">Acknowledgements</string>
     <string name="acknowledgements_text">
-        1. Sources: The three mp3 files I use for sound effects were from some forum
-        I found by googling sound effects. The forum link is http://modmyi.com/forums
-        I dont have the link to the exact thread, though   \n                                
+        Sources: The three mp3 files I used for sound effects were from a forum
+        I found by googling sound effects. The forum link is http://modmyi.com/forums\n\n                                
         
-        2. Code: I dont recall using any code directly, 
-        except an XML for a gradient background which I found on stackoverflow   \n               
+        Code: I didn\'t use anyone else\'s code directly (except Sudoku code)
+        but the colors from some XML backgrounds were found online   \n\n             
         
-        3. People: Thanks to Prof Intille and Mansoor. 
+        People: Thanks to Prof Intille and Mansoor. 
         Also, thanks to my fellow classmates who contributed on Piazza.
         I got my inspiration for the method of splitting the dictionary by prefix through Piazza
     </string>
     <string name="boggle_high_scores_label">High Scores</string>
+    <string name="boggle_rules_label">Scoring rules</string>
+    <string name="boggle_rules_text">The scoring for correct unique words is based on the word\'s length \n\n
+        If the word less than three characters, no points will be awarded\n
+        If the word is 3 or 4 characters long, one point will be awarded\n
+        If the word is over four characters long, one point will be awarded,\n
+        \t plus an additional point for every character over the first four\n
+        \n Example: pizza would yield two points \n
+	</string>
+	<string name="ok_test">Ok</string>
     
    <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>
