@@ -27,7 +27,7 @@ public class MainActivity extends Activity implements OnClickListener{
         globals = Globals.getGlobals();
         
         //TODO: uncomment this
-        //PhoneCheckAPI.doAuthorization(this);
+        PhoneCheckAPI.doAuthorization(this);
 
         this.setTitle("Michael Allen");
         
