@@ -46,6 +46,8 @@
         \n Example: pizza would yield two points \n
 	</string>
 	<string name="ok_test">Ok</string>
+	
+	<string name="pers_boggle_main_label">Persistent Boggle</string>
     
    <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>

@@ -12,6 +12,7 @@ import android.view.View.OnClickListener;
 import android.content.*;
 import edu.neu.madcourse.michaelallen.boggle.BoggleMain;
 import edu.neu.madcourse.michaelallen.boggle.Globals;
+import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain;
 import edu.neu.madcourse.michaelallen.sudoku.Sudoku;
 import edu.neu.mobileClass.*;
 
@@ -27,7 +28,7 @@ public class MainActivity extends Activity implements OnClickListener{
         globals = Globals.getGlobals();
         
         //TODO: uncomment this
-        PhoneCheckAPI.doAuthorization(this);
+        //PhoneCheckAPI.doAuthorization(this);
 
         this.setTitle("Michael Allen");
         
@@ -45,6 +46,9 @@ public class MainActivity extends Activity implements OnClickListener{
         
         View boggleButton = findViewById(R.id.boggle_main_button);
         boggleButton.setOnClickListener(this);
+        
+        View persistentBoggleButton = findViewById(R.id.pers_boggle_main_button);
+        persistentBoggleButton.setOnClickListener(this);
         
     }
 
@@ -76,6 +80,10 @@ public class MainActivity extends Activity implements OnClickListener{
 		 case R.id.boggle_main_button:
 			 Intent boggleIntent = new Intent(this, BoggleMain.class);
 			 startActivity(boggleIntent);
+			 break;
+		 case R.id.pers_boggle_main_button:
+			 Intent persBoggleIntent = new Intent(this, PersBoggleMain.class);
+			 startActivity(persBoggleIntent);
 			 break;
 		 }
 		

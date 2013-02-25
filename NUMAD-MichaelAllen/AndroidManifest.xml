@@ -8,6 +8,10 @@
 	<uses-permission android:name="android.permission.READ_PHONE_DATA" />
 	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-sdk
         android:minSdkVersion="7"
@@ -58,6 +62,36 @@
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.boggle.BoggleHS"
+            android:label="@string/boggle_high_scores_label">
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain"
+            android:label="@string/boggle_main_title"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait"> 
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleGame"
+            android:label="@string/boggle_game_title"
+            android:configChanges="orientation"
+   			android:screenOrientation="portrait">
+        </activity>
+        <activity 
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleScoreScreen"
+            android:label="@string/boggle_score_screen_title"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleRules"
+            android:label="@string/boggle_rules_label">
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleAcknowledgements"
+            android:label="@string/boggle_acknowledgements_title">
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleHS"
             android:label="@string/boggle_high_scores_label">
         </activity>
         <activity android:name="edu.neu.madcourse.michaelallen.sudoku.Sudoku"
