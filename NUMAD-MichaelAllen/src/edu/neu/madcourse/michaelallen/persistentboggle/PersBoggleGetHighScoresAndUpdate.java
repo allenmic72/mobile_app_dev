@@ -29,13 +29,17 @@ public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, S
 	@SuppressWarnings("unchecked")
 	@Override
 	protected String doInBackground(Integer... params) {
+		if (!canAccessServer()){
+			//TODO no access to server, defer the high scoring?
+		}
 		int newHSint = params[0];
 		Calendar c = Calendar.getInstance();
 		Date date = c.getTime();
 		String dateString = date.toString();
-		PersBoggleHighScore newHS = new PersBoggleHighScore(newHSint, "placeholder", dateString);
+		PersBoggleHighScore newHS = new PersBoggleHighScore(newHSint, PersGlobals.getGlobals().getUsername(), dateString);
 		
-		String hsList = KeyValueAPI.get("allenmic", "allenmic", "pers_highscores");
+		String hsList = KeyValueAPI.get(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
+				"pers_highscores");
 		
 		if (hsList == ""){
 			noPriorHS(newHS);
@@ -49,7 +53,8 @@ public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, S
 			
 			ArrayList<PersBoggleHighScore> newhsList = checkOldHighScores(0, oldHighScore, newHS);
 			String jjson = gson.toJson(newhsList);
-			KeyValueAPI.put("allenmic", "allenmic", "pers_highscores", jjson);
+			KeyValueAPI.put(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
+					"pers_highscores", jjson);
 			PersGlobals.getGlobals().setHighScoreList(newhsList);
 		}
 		
@@ -67,7 +72,8 @@ public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, S
 			
 			Gson gson = new Gson();
 			String jjson = gson.toJson(highScores);
-			KeyValueAPI.put("allenmic", "allenmic", "pers_highscores", jjson);
+			KeyValueAPI.put(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
+					"pers_highscores", jjson);
 			PersGlobals.getGlobals().setHighScoreList(highScores);
 		}
 		else{
@@ -99,6 +105,6 @@ public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, S
 	
 	private boolean canAccessServer() {
 	    	return KeyValueAPI.isServerAvailable();
-	    }	
+	}	
 	
 }

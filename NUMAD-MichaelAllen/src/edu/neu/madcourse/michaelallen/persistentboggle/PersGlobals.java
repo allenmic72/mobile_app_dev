@@ -38,6 +38,11 @@ public class PersGlobals{
 	
 	private ArrayList<PersBoggleHighScore> hsList = null;
 	
+	private String username = null;
+	
+	private String teamname = "allenmic";
+	private String password = "allenmic";
+	
 	private static class GlobalHolder{
 		private static final PersGlobals INSTANCE = new PersGlobals();
 	}
@@ -177,10 +182,26 @@ public class PersGlobals{
 	public ArrayList<PersBoggleHighScore> getHighScoreList(){
 		return hsList;
 	}
+	
+	public void setUsername(String user){
+		username = user;
+	}
+	
+	public String getUsername(){
+		return username;
+	}
+	
+	public String getTeamName(){
+		return teamname;
+	}
+	
+	public String getPassword(){
+		return password;
+	}
+	
 	public static PersGlobals getGlobals(){
 		return GlobalHolder.INSTANCE;
 	}
-	
 	
 	
 }

@@ -20,7 +20,7 @@ import android.widget.ListView;
 import android.widget.TableRow;
 
 
-public class PersBoggleHS extends Activity implements OnClickListener{
+public class PersBoggleViewHighScores extends Activity implements OnClickListener{
 	
 	private ListView listv ; 
 	protected void onCreate(Bundle savedInstanceState) {    	
@@ -37,7 +37,7 @@ public class PersBoggleHS extends Activity implements OnClickListener{
     	ArrayList<PersBoggleHighScore> hs = PersGlobals.getGlobals().getHighScoreList();
     	if (hs != null){
     		if (hs.size() == 0){
-    			hsStrings.add("There are no High Scores at this time. Play some  Persistent Boggle!");
+    			hsStrings.add("There are no High Scores at this time. Play some Persistent Boggle!");
     		}
     		else{
 	        	for (int i = 0; i < hs.size(); i++){

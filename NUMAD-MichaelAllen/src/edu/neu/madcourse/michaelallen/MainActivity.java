@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,21 +16,24 @@ import edu.neu.madcourse.michaelallen.boggle.Globals;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain;
 import edu.neu.madcourse.michaelallen.sudoku.Sudoku;
 import edu.neu.mobileClass.*;
+import com.google.android.gcm.GCMRegistrar;
+
+import static edu.neu.madcourse.michaelallen.GCMIntentService.SENDER_ID;
 
 
 public class MainActivity extends Activity implements OnClickListener{
 
-	Globals globals;
     @Override
     protected void onCreate(Bundle savedInstanceState) {    	
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        globals = Globals.getGlobals();
         
         //TODO: uncomment this
         //PhoneCheckAPI.doAuthorization(this);
 
+        registerGCM();
+        
         this.setTitle("Michael Allen");
         
         View teamButton = findViewById(R.id.team_button);
@@ -50,6 +54,8 @@ public class MainActivity extends Activity implements OnClickListener{
         View persistentBoggleButton = findViewById(R.id.pers_boggle_main_button);
         persistentBoggleButton.setOnClickListener(this);
         
+        registerReceiver(mHandleMessageReceiver, new IntentFilter("edu.neu.madcourse.michaelallen.DISPLAY_MESSAGE"));
+        
     }
 
     @Override
@@ -59,6 +65,13 @@ public class MainActivity extends Activity implements OnClickListener{
         return true;
     }
 
+    @Override
+    protected void onDestroy(){
+    	 unregisterReceiver(mHandleMessageReceiver);
+         GCMRegistrar.onDestroy(this);
+         super.onDestroy();
+    }
+    
 	@Override
 	public void onClick(View v) {
 		 switch (v.getId()) {
@@ -88,6 +101,28 @@ public class MainActivity extends Activity implements OnClickListener{
 		 }
 		
 	}
+	
+	/**
+	 * register device with GCM if it is not already registered
+	 */
+	public void registerGCM(){
+		GCMRegistrar.checkDevice(this);
+		GCMRegistrar.checkManifest(this);
+		final String regId = GCMRegistrar.getRegistrationId(this);
+		if (regId.equals("")) {
+		  GCMRegistrar.register(this, SENDER_ID);
+		} else {
+		  Log.v("GCM Registering", "Already registered");
+		}
+	}
+	
+	  private final BroadcastReceiver mHandleMessageReceiver =
+	            new BroadcastReceiver() {
+	        @Override
+	        public void onReceive(Context context, Intent intent) {
+	        	
+	        }
+	    };
 	
     
 }

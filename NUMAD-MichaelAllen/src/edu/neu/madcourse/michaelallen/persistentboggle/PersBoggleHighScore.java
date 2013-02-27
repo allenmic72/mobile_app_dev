@@ -1,8 +1,5 @@
 package edu.neu.madcourse.michaelallen.persistentboggle;
 
-
-
-
 public class PersBoggleHighScore{
 	
 	PersBoggleHighScore(int score, String name, String date){
