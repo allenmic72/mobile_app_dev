@@ -35,12 +35,15 @@ public class GCMServlet {
 							Log.d("GCMServlet", "Sending message to " + regId);
 							return result;
 						} catch (IOException e) {
-							
+							Log.d("GCMServlet", "IOException when sending message: " + e);
 						}
 					}
 					return null;
 				}
 				
+				 protected void onPostExecute(Result result) {
+			         Log.d("GCMServlet", "" + result);
+			     }
 				
 			};
 			sendMessageAsync.execute(message);

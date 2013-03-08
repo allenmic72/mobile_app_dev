@@ -22,6 +22,12 @@
 	    android:visibility="invisible"
         />
     <Button
+        android:id="@+id/pers_boggle_challenge_button"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="@string/pers_boggle_challenge_user_label"
+        />
+    <Button
         android:id="@+id/pers_boggle_new_game_button"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"

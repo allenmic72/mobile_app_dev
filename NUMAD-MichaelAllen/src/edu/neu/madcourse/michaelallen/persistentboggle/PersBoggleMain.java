@@ -1,7 +1,13 @@
 package edu.neu.madcourse.michaelallen.persistentboggle;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
+
 import com.google.android.gcm.server.Message;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import edu.neu.madcourse.michaelallen.R;
 import edu.neu.mobileclass.apis.KeyValueAPI;
@@ -51,6 +57,9 @@ public class PersBoggleMain extends Activity implements OnClickListener{
         View boggleRulesButton = findViewById(R.id.pers_boggle_rules_button);
         boggleRulesButton.setOnClickListener(this);
         
+        View boggleChallengeButton = findViewById(R.id.pers_boggle_challenge_button);
+        boggleChallengeButton.setOnClickListener(this);
+		
         if (canAccessNetwork()){
             AsyncTask<Integer, Void, String> setHSList = new PersBoggleGetHighScoresAndUpdate();
             setHSList.execute(-1);
@@ -58,10 +67,9 @@ public class PersBoggleMain extends Activity implements OnClickListener{
         
         getUsername();
         
-        GCMServlet serv = new GCMServlet();
-        Message mes = new Message.Builder().build();
-        serv.sendMessage(mes, "9788883064");
+        
 
+        
     }
     
     @Override
@@ -117,6 +125,10 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 			 Intent boggleRules = new Intent(this, PersBoggleRules.class);
 			 startActivity(boggleRules);
 			 break;
+		 case R.id.pers_boggle_challenge_button:
+			 Intent boggleChallenge = new Intent(this, PersBoggleChallengeUser.class);
+			 startActivity(boggleChallenge);
+			 break;
 		 }
 		
 	}
@@ -144,6 +156,9 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 		if (username != null){
 			PersGlobals.getGlobals().setUsername(username);
 			Log.d("MainActivity getUsername", "username is " + username);
+			
+			AsyncTask<String, Void, Void> addUsernameToArray = new addToArrayOfUsersOnServer();
+			addUsernameToArray.execute(username);
 		}
 		else{
 			Log.d("MainActivity getUsername", "no username in shared pref, checking server");
@@ -162,6 +177,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 	/**
 	 * No username in sharedPref or in the server for this phone
 	 * Ask user for a username they wish to use
+	 * Store that username/phone combo on server, save to sharedPref and PersGlobals
 	 */
 	private void promptUserForUsername(final Context c){
 		AlertDialog.Builder userNamePrompt = new AlertDialog.Builder(this);
@@ -181,10 +197,15 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 				    getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
 				String phoneNumber = tm.getLine1Number();
 				
-				AsyncTask<String, Void, Void> putName = new PersBogglePutKeyValToServer();
-				putName.execute(phoneNumber, username);
+				AsyncTask<String, Void, Void> putPhoneToName = new PersBogglePutKeyValToServer();
+				putPhoneToName.execute(phoneNumber, username);
 				PersGlobals.getGlobals().setUsername(username);
 				
+				AsyncTask<String, Void, Void> putNameToPhone = new PersBogglePutKeyValToServer();
+				putNameToPhone.execute(username, phoneNumber);
+				
+				AsyncTask<String, Void, Void> addUsernameToArray = new addToArrayOfUsersOnServer();
+				addUsernameToArray.execute(username);
 					
 				PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
 				spref.putString(c, "username", username);
@@ -241,5 +262,65 @@ class getUsernameFromServer extends AsyncTask<String, Void, String>{
     	return KeyValueAPI.isServerAvailable();
 	}
 	
+	
+}
+
+/**
+ * adds username to the ArrayList<String> on the server representing usernames
+ * @author Mike
+ *
+ */
+class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
+
+	@Override
+	protected Void doInBackground(String... params) {
+		String username = params[0];
+		
+		if(KeyValueAPI.isServerAvailable()){
+			String jsonFromServer = KeyValueAPI.get("allenmic", "allenmic", "usernames");
+			Log.d("addToarray", "json array on server is " + jsonFromServer);
+			if (jsonFromServer == null || jsonFromServer == ""){ //first user to be added
+				Log.d("", "here");
+				ArrayList<String> newArray = new ArrayList<String>();
+				PersGlobals.getGlobals().setOtherUsers(newArray);
+				
+				addToArrayAndPutOnServer(newArray, username);
+			}
+			else{
+				Gson gson = new Gson();
+				Type type = new TypeToken<ArrayList<String>>(){}.getType();
+				
+				ArrayList<String> oldArray = gson.fromJson(jsonFromServer, type);
+				
+				
+				//only add our username if it isn't there already
+				if (!oldArray.contains(username)){
+					PersGlobals.getGlobals().setOtherUsers(oldArray);
+					addToArrayAndPutOnServer(oldArray, username);
+				}
+				else{//don't want ourselves in the otherUsers array
+					//oldArray.remove(username);
+					PersGlobals.getGlobals().setOtherUsers(oldArray);
+				}
+				
+			}
+		}
+		
+		return null;
+	}
+	
+	private void addToArrayAndPutOnServer(ArrayList<String> oldArray, String username){
+		Gson gson = new Gson();
+		
+		oldArray.add(username);
+		
+		
+		Type type = new TypeToken<ArrayList<String>>(){}.getType();
+		String arrayJson = gson.toJson(oldArray, type);
+		
+		Log.d("addToArrayAndPutOnServer", "new array is ::: " + arrayJson);
+		
+		KeyValueAPI.put("allenmic", "allenmic", "usernames", arrayJson);
+	}
 	
 }

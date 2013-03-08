@@ -8,9 +8,15 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Vibrator;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import edu.neu.madcourse.michaelallen.MainActivity;
+import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleGame;
+import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersGlobals;
 
 import com.google.android.gcm.GCMBaseIntentService;
@@ -36,8 +42,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onMessage(Context c, Intent intent) {
-		Log.d(TAG, "Recieved a GCM Message" + intent);
-		generateNotification(c, "Hey boy you got a message, better read it");
+		Bundle extras = intent.getExtras();
+		String username = (String) extras.get("username");
+		String phoneNum = (String) extras.get("phoneNum");
+		String message = (String) extras.get("message");
+		Log.d(TAG, "Message: " + message + ", from" + username + " at " + phoneNum);
+		generateNotification(c, username);
 		
 	}
 
@@ -95,22 +105,37 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 /**
      * Issues a notification to inform the user that server has sent a message.
      */
-    private static void generateNotification(Context context, String message) {
+    private static void generateNotification(Context context, String username) {
+        Vibrator v = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
+        v.vibrate(75);
         int icon = R.drawable.ic_launcher;
-        long when = System.currentTimeMillis();
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification notification = new Notification(icon, message, when);
-        String title = context.getString(R.string.app_name);
-        Intent notificationIntent = new Intent(context, MainActivity.class);
-        // set intent so it does not start a new activity
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent intent =
-                PendingIntent.getActivity(context, 0, notificationIntent, 0);
-        notification.setLatestEventInfo(context, title, message, intent);
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
-        notificationManager.notify(0, notification);
+        
+        NotificationCompat.Builder notification = 
+        		new NotificationCompat.Builder(context)
+       			.setSmallIcon(icon)
+       			.setContentTitle("Challenged!")
+       			.setContentText(username + " has challenged you!")
+       			.setAutoCancel(true);
+        
+
+        Intent notificationIntent = new Intent(context, PersBoggleGame.class);
+        notificationIntent.putExtra("opponent", username);
+        
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(PersBoggleMain.class);
+        stackBuilder.addNextIntent(notificationIntent);
+        
+        PendingIntent pendingIntent =
+                stackBuilder.getPendingIntent(
+                    0,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        notification.setContentIntent(pendingIntent);
+        
+        notificationManager.notify(username.hashCode(), notification.build());
+        
     }
 	
 }

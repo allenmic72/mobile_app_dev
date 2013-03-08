@@ -15,5 +15,6 @@
    <color name="boggle_correctWord">#3566FF33</color>
    <color name="boggle_incorrectWord">#35FF3333</color>
    <color name="boggle_main">#7F634714</color>
+   <color name="pers_boggle_otherUserWord">#35FF9966</color>
     
 </resources>

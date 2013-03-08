@@ -3,6 +3,9 @@ package edu.neu.madcourse.michaelallen.persistentboggle;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,6 +16,7 @@ import android.graphics.Path.Direction;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.media.SoundPool;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Vibrator;
@@ -22,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import edu.neu.madcourse.michaelallen.R;
 import edu.neu.madcourse.michaelallen.sudoku.Music;
+import edu.neu.mobileclass.apis.KeyValueAPI;
 
 public class PersBoggleGameView extends View {
 
@@ -33,12 +38,17 @@ public class PersBoggleGameView extends View {
 	
 	private ArrayList<Rect> goodSelectionBlocks;
 	private ArrayList<Rect> badSelectionBlocks;
+	private ArrayList<Rect> otherUserBlocks;
 	
 	private final PersBoggleGame game;
 	
 	
 	private static final String TAG = "PersBoggleGameView";
 	
+	private Rect otherUserRect = new Rect();
+	
+	
+	private int myVersion;
 	
 	public PersBoggleGameView(Context context, AttributeSet attrs) {
 		super(context);
@@ -48,7 +58,9 @@ public class PersBoggleGameView extends View {
 		selectedLetters = new ArrayList<String>();
 		goodSelectionBlocks = new ArrayList<Rect>();
 		badSelectionBlocks = new ArrayList<Rect>();
+		otherUserBlocks = new ArrayList<Rect>();
 		
+		myVersion = 0;
 		this.setBackgroundResource(R.drawable.bogglebck);
 		
 	}
@@ -108,10 +120,23 @@ public class PersBoggleGameView extends View {
 		Paint badWordSelection = new Paint();
 		badWordSelection.setColor(getResources().getColor(R.color.boggle_incorrectWord));
 		for (int block = 0; block < badSelectionBlocks.size(); block++){
-			if (badSelectionBlocks.get(block) != null){				
+			if (badSelectionBlocks.get(block) != null){	
 			    canvas.drawRect(badSelectionBlocks.get(block), badWordSelection);
 			}
 		}
+		
+		
+		//Draw the other user's recent actions
+		Paint otherUserSelection = new Paint();
+		otherUserSelection.setColor(getResources().getColor(R.color.pers_boggle_otherUserWord));
+		for (int i = 0; i < otherUserBlocks.size(); i++){
+			if (otherUserBlocks.get(i) != null){
+				canvas.drawRect(otherUserBlocks.get(i), otherUserSelection);
+			}
+		}
+		
+		
+		
 		
 		Paint foreground = new Paint(Paint.ANTI_ALIAS_FLAG);
 	      foreground.setColor(getResources().getColor(
@@ -132,6 +157,46 @@ public class PersBoggleGameView extends View {
 		
 		
 		
+		
+		
+	}
+	
+	public void resetOtherUserBlocks(){//reset the opponent selected blocks
+		for(int i = 0; i < otherUserBlocks.size(); i++){						
+			Rect xy = otherUserBlocks.get(i);
+			Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
+			postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
+		}
+		otherUserBlocks.clear();
+		}
+	
+	/**
+	 * invalidates the blocks in goodSelection, with a delay
+	 * the delay gives some semblance of animation
+	 */
+	public void animateOpponentSelection(int[][] goodSelection){
+		long delay = 0;
+		//TODO replaces otherUserBlocks, so might miss some opponent actions
+		if (goodSelection != null){
+			for (int x = 0; x < PersGlobals.getGlobals().getNumberOfBlocks(); x++){
+				for (int y = 0; y < PersGlobals.getGlobals().getNumberOfBlocks(); y++){
+					if (goodSelection[x][y] == 1){
+						Log.d(TAG, "going to invalidate at " + x + " " + y);
+						//change rect dimensions from normalized blocks to pixels
+						Rect xy = new Rect();
+						xy.top = y * blockWidth;
+						xy.bottom = (y + 1) * blockWidth;
+						xy.left = x * blockWidth;
+						xy.right = (x + 1) * blockWidth;
+						Log.d(TAG, "animating opponent selection at " + xy.left + ", " + xy.top);
+						postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
+						otherUserBlocks.add(xy);
+						delay += 25;
+					}
+				}
+			}
+			
+		}
 	}
 	
 	@Override
@@ -294,18 +359,21 @@ public class PersBoggleGameView extends View {
 	 * @throws IOException 
 	 */
 	private void checkSelectedLetters(){
-		boolean goodWord = this.game.checkWord(selectedLetters);
-		
+		boolean goodWord = this.game.checkWordAndRewardUser(selectedLetters);
 		ArrayList<Rect> selectionAnimationBlocks;
 		if (goodWord){
 			selectionAnimationBlocks = goodSelectionBlocks;
+			
 		}
 		else{
 			selectionAnimationBlocks = badSelectionBlocks;
 		}
+		
+		
 		clearAllSelections(selectionAnimationBlocks);
 	}
 	
+
 	/**
 	 * invalidates all selected blocks,
 	 * clears the selected blocks, 
@@ -319,11 +387,15 @@ public class PersBoggleGameView extends View {
 	private void clearAllSelections(ArrayList<Rect> goodOrBadSelection){
 		this.game.clearSelectedLetterTextView();
 		
+		
+		
 		for (int i = 0; i < selectedBlocks.size(); i++){
 			Rect block = selectedBlocks.get(i);
 			goodOrBadSelection.add(block);
 			invalidate(block);
 		}
+		
+		packageGameStateAndPublish();
 		
 		selectedLetters.clear();
 		selectedBlocks.clear();
@@ -379,4 +451,67 @@ public class PersBoggleGameView extends View {
 		}
 		
 	}
+	
+	private void packageGameStateAndPublish() {
+		ArrayList<Rect> selectedBlocks;
+		int goodOrBad = -1;
+		if (!goodSelectionBlocks.isEmpty()){
+			selectedBlocks = goodSelectionBlocks;
+			goodOrBad = 1;
+		}
+		else{
+			selectedBlocks = badSelectionBlocks;
+		}
+		
+		
+		PersBoggleGameState state = new PersBoggleGameState();
+		Log.d(TAG, "selected blocks: " + selectedBlocks);
+		int[][] goodSelection = convertRectsToMatrix(selectedBlocks, goodOrBad);
+		
+		//TODO global vars for all the game state vars
+		state.goodSelection = goodSelection;
+		myVersion++;
+		state.gameVersion = myVersion;
+		publishChangesToServer(state);
+	}
+
+	private int[][] convertRectsToMatrix(ArrayList<Rect> selectedBlocks, int goodOrBad) {
+		int size = PersGlobals.getGlobals().getNumberOfBlocks();
+		int[][] matrix = new int[size][size];
+		
+		for (int i = 0; i < selectedBlocks.size(); i++){
+			Rect r = selectedBlocks.get(i);
+			int x = r.left / blockWidth;
+			int y = r.top / blockWidth;
+			matrix[x][y] = goodOrBad;
+		}
+		
+		return matrix;
+	}
+	
+	/**
+	 * Publishes a new PersBoggleGameState to the server
+	 * puts to key "username" + "opponent"
+	 */
+	private void publishChangesToServer(PersBoggleGameState gameState){
+		new AsyncTask<PersBoggleGameState, Void, Void>(){
+
+			@Override
+			protected Void doInBackground(PersBoggleGameState... params) {
+				PersBoggleGameState gameState = params[0];
+				if(KeyValueAPI.isServerAvailable()){
+					Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+					String json = gson.toJson(gameState);
+					KeyValueAPI.put("allenmic", "allenmic", 
+							PersGlobals.getGlobals().getUsername() +
+							PersGlobals.getGlobals().getOpponent(), json);
+					Log.d(TAG, "putting " + json);
+				}
+				return null;
+			}
+			
+		}.execute(gameState);
+	}
+	
+	
 }

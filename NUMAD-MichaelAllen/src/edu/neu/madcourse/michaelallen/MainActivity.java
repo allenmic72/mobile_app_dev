@@ -4,8 +4,12 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -16,6 +20,8 @@ import edu.neu.madcourse.michaelallen.boggle.Globals;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain;
 import edu.neu.madcourse.michaelallen.sudoku.Sudoku;
 import edu.neu.mobileClass.*;
+import edu.neu.mobileclass.apis.KeyValueAPI;
+
 import com.google.android.gcm.GCMRegistrar;
 
 import static edu.neu.madcourse.michaelallen.GCMIntentService.SENDER_ID;
@@ -112,8 +118,46 @@ public class MainActivity extends Activity implements OnClickListener{
 		if (regId.equals("")) {
 		  GCMRegistrar.register(this, SENDER_ID);
 		} else {
-		  Log.v("GCM Registering", "Already registered");
+		  Log.v("GCM Registering", "Already registered" + regId);
+		  
+		  //check to see if it is stored on server
+		  AsyncTask<String, Void, Void> checkServerForRegId = new AsyncTask<String, Void, Void>(){
+
+			@Override
+			protected Void doInBackground(String... params) {
+				String regId = params[0];
+				if (canAccessNetwork() && KeyValueAPI.isServerAvailable()){
+					TelephonyManager tm = (TelephonyManager) 
+						    getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+					String phoneNumber = tm.getLine1Number();
+					String serverRegId = KeyValueAPI.get("allenmic", "allenmic", phoneNumber + "regId");
+					if (serverRegId == null || serverRegId == ""){
+						Log.d("registerGCM", "regId on server DNE, putting " + regId);
+						KeyValueAPI.put("allenmic", "allenmic", phoneNumber + "regId", regId);
+					}
+					else{
+						Log.d("registerGCM", regId + " is already on the server");
+					}
+				}
+				return null;
+			}
+			  
+		  };
+		  checkServerForRegId.execute(regId);
 		}
+	}
+	
+	private boolean canAccessNetwork() {
+	    ConnectivityManager connectivityManager 
+	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    if (activeNetworkInfo != null){
+	    	return true;
+	    }
+	    else{
+	    	return false;
+	    }
+	    
 	}
 	
 	  private final BroadcastReceiver mHandleMessageReceiver =

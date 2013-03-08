@@ -5,7 +5,7 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp" 
     android:background="@drawable/backgroundgradient">
-    
+ 
     <TextView 
         android:id="@+id/pers_boggle_game_timer"
         android:layout_width="fill_parent"

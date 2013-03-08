@@ -6,13 +6,15 @@ import edu.neu.madcourse.michaelallen.R;
 import edu.neu.madcourse.michaelallen.sudoku.Game;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.media.SoundPool;
+import android.os.AsyncTask;
 import android.os.CountDownTimer;
 
 public class PersGlobals{
 	private PersGlobals(){}
 	
-	private int numberOfBlocks = 5;
+	private int numberOfBlocks = 5; //default 5
 	
 	private String[][] boardLetters = new String[numberOfBlocks][numberOfBlocks];
 	
@@ -39,9 +41,15 @@ public class PersGlobals{
 	private ArrayList<PersBoggleHighScore> hsList = null;
 	
 	private String username = null;
+	private String currentOpponent = null;
 	
 	private String teamname = "allenmic";
 	private String password = "allenmic";
+	
+	private ArrayList<String> otherUsers = new ArrayList<String>();
+	private ArrayList<Rect> otherUserBlocks = new ArrayList<Rect>();
+	
+	private AsyncTask<String, Void, Void> pollingServer;
 	
 	private static class GlobalHolder{
 		private static final PersGlobals INSTANCE = new PersGlobals();
@@ -158,6 +166,10 @@ public class PersGlobals{
 		priorChosenWords.add(word);
 	}
 	
+	public void addAllChosenWords(ArrayList<String> chosenWords){
+		priorChosenWords.addAll(chosenWords);
+	}
+	
 	public void setNumberOfBlocks(int n){
 		numberOfBlocks = n;
 	}
@@ -197,6 +209,44 @@ public class PersGlobals{
 	
 	public String getPassword(){
 		return password;
+	}
+	
+	public ArrayList<String> getOtherUsers(){
+		return otherUsers;
+	}
+	
+	public void setOtherUsers(ArrayList<String> users){
+		otherUsers = users;
+	}
+	
+	public void addToOtherUserBlocks(Rect block){
+		otherUserBlocks.add(block);
+	}
+	
+	public ArrayList<Rect> getOtherUserBlocks(){
+		return otherUserBlocks;
+	}
+	
+	public void clearOtherUserBlocks(){
+		otherUserBlocks.clear();
+	}
+	
+	public void setOpponent(String o){
+		currentOpponent = o;
+	}
+	
+	public String getOpponent(){
+		return currentOpponent;
+	}
+	
+	public void setPollingTask(AsyncTask<String, Void, Void> task){
+		pollingServer = task;
+	}
+	
+	public void cancelPollingTask(){
+		if (pollingServer != null){
+			pollingServer.cancel(true);
+		}
 	}
 	
 	public static PersGlobals getGlobals(){

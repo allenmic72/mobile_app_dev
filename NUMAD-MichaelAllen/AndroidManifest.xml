@@ -104,6 +104,10 @@
             android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleViewHighScores"
             android:label="@string/boggle_high_scores_label">
         </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleChallengeUser"
+            android:label="@string/pers_boggle_challenge_user_label">
+        </activity>
         <activity android:name="edu.neu.madcourse.michaelallen.sudoku.Sudoku"
               android:label="@string/sudoku_title">
         </activity>

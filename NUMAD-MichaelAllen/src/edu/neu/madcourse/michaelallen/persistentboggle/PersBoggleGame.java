@@ -10,6 +10,7 @@ import java.util.Random;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -20,6 +21,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.AssetManager;
 import android.media.SoundPool;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -29,13 +31,26 @@ import android.widget.Button;
 import android.widget.TextView;
 import edu.neu.madcourse.michaelallen.R;
 import edu.neu.madcourse.michaelallen.boggle.Globals;
+import edu.neu.mobileclass.apis.KeyValueAPI;
+import android.graphics.Rect;
 
 public class PersBoggleGame extends Activity implements OnClickListener{
 	
 	
+	String opponent;
+	private int opponentVersion;
+	
+	private final String TAG = "PersBoggleGame";
+	AsyncTask<String, Void, Void> pollingServer;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		opponent = getIntent().getStringExtra("opponent");
+		PersGlobals.getGlobals().setOpponent(opponent);
+		
+		opponentVersion = 0;
 		
 		setContentView(R.layout.pers_boggle_game);
 		
@@ -43,10 +58,10 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		quitGame.setOnClickListener(this);
 		
 		Button pausedResume = (Button) findViewById(R.id.pers_boggle_game_pause);
-		pausedResume.setOnClickListener(this);
+		pausedResume.setOnClickListener(this);		
 		
 		final String RESUME_GAME = "edu.neu.madcourse.michaelallen.persistentboggle.resume";
-		int resumed = getIntent().getIntExtra(RESUME_GAME, 0);
+		int resumed = getIntent().getIntExtra(RESUME_GAME, 0);		
 		
 		TextView SelectedLetters = (TextView) findViewById(R.id.pers_boggle_game_selected);
 		TextView CurrentScore = (TextView) findViewById(R.id.pers_boggle_game_currentscore);
@@ -68,7 +83,21 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			PersGlobals.getGlobals().resetAllVariables();
 			populateBoardWithLetters();
 		}
+		/*
+		int[][] test = new int[5][5];
+		test[1][1] = 1;
+		test[1][2] = 1;
+		PersBoggleGameState state = new PersBoggleGameState();
+		state.goodSelection = test;
+		state.gameVersion = 10;
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		String json = gson.toJson(state);
 		
+		new PersBogglePutKeyValToServer().execute(opponent + PersGlobals.getGlobals().getUsername(), json);
+		*/
+		
+
+	    startPollingServer(opponent + PersGlobals.getGlobals().getUsername());
 	}
 
 	@Override
@@ -90,6 +119,11 @@ public class PersBoggleGame extends Activity implements OnClickListener{
        if(!PersGlobals.getGlobals().getIsPaused()){
     	   PersGlobals.getGlobals().setTimer(makeTimer(PersGlobals.getGlobals().getTimerVal()));
        }
+       //start polling server looking at the key <opponentUsername>+<myUsername>
+       if (opponent != null){
+    	   Log.d("Challenged game", "starting game against " + opponent);
+       }
+       
     }
 
     @Override
@@ -106,16 +140,14 @@ public class PersBoggleGame extends Activity implements OnClickListener{
     protected void onStop(){
     	super.onStop();
     	saveSharedPreferences();
+    	//TODO: switch to async?
+    	pollingServer.cancel(true);
     }
     
     @Override
     protected void onStart(){
     	super.onStart();
     }
-    
-    
-    
-
 
 	public void setBoardLetter(int i, int j, String x){
 		PersGlobals.getGlobals().setBoardLetters(i, j,  x);
@@ -140,7 +172,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		SelectedLetters.setText("");
 	}
 	
-	public boolean checkWord(ArrayList<String> selectedLetters){
+	public boolean checkWordAndRewardUser(ArrayList<String> selectedLetters){
 		if (selectedLetters.size() < 3){
 			return false;
 		}
@@ -172,6 +204,74 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		
 		
 	}
+	
+	 /**
+		 * Starts polling and continues until cancelled
+		 * checks "opponent" + "username" key
+		 * updates certain game state variables based on value gotten,
+		 * and animates the board based on new words the opponent has selected
+		 * @param key
+		 */
+		private void startPollingServer(final String key){
+			//final PersBoggleGameView gameView = (PersBoggleGameView) findViewById(R.id.pers_boggle_game_view);
+			
+			pollingServer = new AsyncTask<String, Void, Void>(){
+				@Override
+				protected Void doInBackground(String... params) {
+					String key = params[0];
+					Log.d("PersBoggleGame", "Starting to poll server for " + key);
+					
+					//poll server maximum of once every 500ms
+					while(true){
+						if (isCancelled() == true){
+							if(KeyValueAPI.isServerAvailable()){
+								//TODO move this somewhere else?
+								KeyValueAPI.clearKey("allenmic", "allenmic", key);
+							}
+							break;
+						}
+						
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							
+						}
+						
+						gameView.resetOtherUserBlocks();
+						
+						if(KeyValueAPI.isServerAvailable()){
+							String json = KeyValueAPI.get("allenmic", "allenmic", key);
+							
+							if (json != null && json != ""){
+
+								Log.d(TAG, "got " + json);
+								Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+								PersBoggleGameState opponentGame = gson.fromJson(json, PersBoggleGameState.class);
+								
+								if(opponentGame.gameVersion > opponentVersion){
+									
+									//TODO
+									//set opponent score
+									//check game state vars
+									
+									gameView.animateOpponentSelection(opponentGame.goodSelection);
+									
+									PersGlobals.getGlobals().addAllChosenWords(opponentGame.newChosenWords);
+									opponentVersion = opponentGame.gameVersion;
+								}
+									
+							}
+						}
+					}
+					
+					return null;
+					
+					
+				}
+				
+			};
+			pollingServer.execute(key);
+		}
 	
 	private void switchPausedOrResumed(){
 		Button pausedResume = (Button) findViewById(R.id.pers_boggle_game_pause);
