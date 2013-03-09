@@ -38,10 +38,9 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	
 	
 	String opponent;
-	private int opponentVersion;
+	
 	
 	private final String TAG = "PersBoggleGame";
-	AsyncTask<String, Void, Void> pollingServer;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -49,8 +48,6 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		
 		opponent = getIntent().getStringExtra("opponent");
 		PersGlobals.getGlobals().setOpponent(opponent);
-		
-		opponentVersion = 0;
 		
 		setContentView(R.layout.pers_boggle_game);
 		
@@ -96,8 +93,6 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		new PersBogglePutKeyValToServer().execute(opponent + PersGlobals.getGlobals().getUsername(), json);
 		*/
 		
-
-	    startPollingServer(opponent + PersGlobals.getGlobals().getUsername());
 	}
 
 	@Override
@@ -141,7 +136,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
     	super.onStop();
     	saveSharedPreferences();
     	//TODO: switch to async?
-    	pollingServer.cancel(true);
+    	PersGlobals.getGlobals().cancelPollingTask();
     }
     
     @Override
@@ -205,73 +200,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		
 	}
 	
-	 /**
-		 * Starts polling and continues until cancelled
-		 * checks "opponent" + "username" key
-		 * updates certain game state variables based on value gotten,
-		 * and animates the board based on new words the opponent has selected
-		 * @param key
-		 */
-		private void startPollingServer(final String key){
-			//final PersBoggleGameView gameView = (PersBoggleGameView) findViewById(R.id.pers_boggle_game_view);
-			
-			pollingServer = new AsyncTask<String, Void, Void>(){
-				@Override
-				protected Void doInBackground(String... params) {
-					String key = params[0];
-					Log.d("PersBoggleGame", "Starting to poll server for " + key);
-					
-					//poll server maximum of once every 500ms
-					while(true){
-						if (isCancelled() == true){
-							if(KeyValueAPI.isServerAvailable()){
-								//TODO move this somewhere else?
-								KeyValueAPI.clearKey("allenmic", "allenmic", key);
-							}
-							break;
-						}
-						
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException e) {
-							
-						}
-						
-						gameView.resetOtherUserBlocks();
-						
-						if(KeyValueAPI.isServerAvailable()){
-							String json = KeyValueAPI.get("allenmic", "allenmic", key);
-							
-							if (json != null && json != ""){
-
-								Log.d(TAG, "got " + json);
-								Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-								PersBoggleGameState opponentGame = gson.fromJson(json, PersBoggleGameState.class);
-								
-								if(opponentGame.gameVersion > opponentVersion){
-									
-									//TODO
-									//set opponent score
-									//check game state vars
-									
-									gameView.animateOpponentSelection(opponentGame.goodSelection);
-									
-									PersGlobals.getGlobals().addAllChosenWords(opponentGame.newChosenWords);
-									opponentVersion = opponentGame.gameVersion;
-								}
-									
-							}
-						}
-					}
-					
-					return null;
-					
-					
-				}
-				
-			};
-			pollingServer.execute(key);
-		}
+	 
 	
 	private void switchPausedOrResumed(){
 		Button pausedResume = (Button) findViewById(R.id.pers_boggle_game_pause);

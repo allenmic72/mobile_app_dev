@@ -25,7 +25,7 @@ public class PersBoggleGameState{
 	public long timerVal;
 	
 	@Expose 
-	public int[][] goodSelection = new int[5][5];
+	public int[][] blockSelection = new int[5][5];
 	
 	@Expose
 	public ArrayList<String> newChosenWords = new ArrayList<String>();

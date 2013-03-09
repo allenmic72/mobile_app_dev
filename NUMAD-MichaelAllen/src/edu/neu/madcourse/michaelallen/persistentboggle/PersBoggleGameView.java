@@ -38,16 +38,16 @@ public class PersBoggleGameView extends View {
 	
 	private ArrayList<Rect> goodSelectionBlocks;
 	private ArrayList<Rect> badSelectionBlocks;
-	private ArrayList<Rect> otherUserBlocks;
+	private ArrayList<Rect> goodOtherUserBlocks;
+	private ArrayList<Rect> badOtherUserBlocks;
 	
 	private final PersBoggleGame game;
-	
 	
 	private static final String TAG = "PersBoggleGameView";
 	
 	private Rect otherUserRect = new Rect();
 	
-	
+	private int opponentVersion;
 	private int myVersion;
 	
 	public PersBoggleGameView(Context context, AttributeSet attrs) {
@@ -58,11 +58,14 @@ public class PersBoggleGameView extends View {
 		selectedLetters = new ArrayList<String>();
 		goodSelectionBlocks = new ArrayList<Rect>();
 		badSelectionBlocks = new ArrayList<Rect>();
-		otherUserBlocks = new ArrayList<Rect>();
+		goodOtherUserBlocks = new ArrayList<Rect>();
+		badOtherUserBlocks = new ArrayList<Rect>();
 		
 		myVersion = 0;
+		opponentVersion = 0;
 		this.setBackgroundResource(R.drawable.bogglebck);
 		
+		startPollingServer(PersGlobals.getGlobals().getUsername() + PersGlobals.getGlobals().getUsername());
 	}
 	
 	@Override
@@ -127,16 +130,21 @@ public class PersBoggleGameView extends View {
 		
 		
 		//Draw the other user's recent actions
-		Paint otherUserSelection = new Paint();
-		otherUserSelection.setColor(getResources().getColor(R.color.pers_boggle_otherUserWord));
-		for (int i = 0; i < otherUserBlocks.size(); i++){
-			if (otherUserBlocks.get(i) != null){
-				canvas.drawRect(otherUserBlocks.get(i), otherUserSelection);
+		Paint goodOtherUserSelection = new Paint();
+		goodOtherUserSelection.setColor(getResources().getColor(R.color.pers_boggle_otherUserGoodWord));
+		for (int i = 0; i < goodOtherUserBlocks.size(); i++){
+			if (goodOtherUserBlocks.get(i) != null){
+				canvas.drawRect(goodOtherUserBlocks.get(i), goodOtherUserSelection);
 			}
 		}
 		
-		
-		
+		Paint badOtherUserSelection = new Paint();
+		badOtherUserSelection.setColor(getResources().getColor(R.color.pers_boggle_otherUserBadWord));
+		for (int i = 0; i < badOtherUserBlocks.size(); i++){
+			if (badOtherUserBlocks.get(i) != null){
+				canvas.drawRect(badOtherUserBlocks.get(i), badOtherUserSelection);
+			}
+		}
 		
 		Paint foreground = new Paint(Paint.ANTI_ALIAS_FLAG);
 	      foreground.setColor(getResources().getColor(
@@ -159,44 +167,6 @@ public class PersBoggleGameView extends View {
 		
 		
 		
-	}
-	
-	public void resetOtherUserBlocks(){//reset the opponent selected blocks
-		for(int i = 0; i < otherUserBlocks.size(); i++){						
-			Rect xy = otherUserBlocks.get(i);
-			Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
-			postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
-		}
-		otherUserBlocks.clear();
-		}
-	
-	/**
-	 * invalidates the blocks in goodSelection, with a delay
-	 * the delay gives some semblance of animation
-	 */
-	public void animateOpponentSelection(int[][] goodSelection){
-		long delay = 0;
-		//TODO replaces otherUserBlocks, so might miss some opponent actions
-		if (goodSelection != null){
-			for (int x = 0; x < PersGlobals.getGlobals().getNumberOfBlocks(); x++){
-				for (int y = 0; y < PersGlobals.getGlobals().getNumberOfBlocks(); y++){
-					if (goodSelection[x][y] == 1){
-						Log.d(TAG, "going to invalidate at " + x + " " + y);
-						//change rect dimensions from normalized blocks to pixels
-						Rect xy = new Rect();
-						xy.top = y * blockWidth;
-						xy.bottom = (y + 1) * blockWidth;
-						xy.left = x * blockWidth;
-						xy.right = (x + 1) * blockWidth;
-						Log.d(TAG, "animating opponent selection at " + xy.left + ", " + xy.top);
-						postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
-						otherUserBlocks.add(xy);
-						delay += 25;
-					}
-				}
-			}
-			
-		}
 	}
 	
 	@Override
@@ -469,7 +439,7 @@ public class PersBoggleGameView extends View {
 		int[][] goodSelection = convertRectsToMatrix(selectedBlocks, goodOrBad);
 		
 		//TODO global vars for all the game state vars
-		state.goodSelection = goodSelection;
+		state.blockSelection = goodSelection;
 		myVersion++;
 		state.gameVersion = myVersion;
 		publishChangesToServer(state);
@@ -513,5 +483,120 @@ public class PersBoggleGameView extends View {
 		}.execute(gameState);
 	}
 	
+	/**
+	 * Starts polling and continues until cancelled
+	 * checks "opponent" + "username" key
+	 * updates certain game state variables based on value gotten,
+	 * and animates the board based on new words the opponent has selected
+	 * @param key
+	 */
+	private void startPollingServer(final String key){
+		//final PersBoggleGameView gameView = (PersBoggleGameView) findViewById(R.id.pers_boggle_game_view);
+		
+		AsyncTask<String, Void, Void> pollingServer = new AsyncTask<String, Void, Void>(){
+			@Override
+			protected Void doInBackground(String... params) {
+				String key = params[0];
+				Log.d("PersBoggleGame", "Starting to poll server for " + key);
+				
+				//poll server maximum of once every 500ms
+				while(true){
+					if (isCancelled() == true){
+						if(KeyValueAPI.isServerAvailable()){
+							//TODO move this somewhere else?
+							KeyValueAPI.clearKey("allenmic", "allenmic", key);
+						}
+						break;
+					}
+					
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						
+					}
+					
+					resetOtherUserBlocks();
+					
+					if(KeyValueAPI.isServerAvailable()){
+						String json = KeyValueAPI.get("allenmic", "allenmic", key);
+						
+						if (json != null && json != ""){
+
+							
+							Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+							PersBoggleGameState opponentGame = gson.fromJson(json, PersBoggleGameState.class);
+							
+							if(opponentGame.gameVersion > opponentVersion){
+								Log.d(TAG, "got new opponent state: " + json);
+								//TODO
+								//set opponent score
+								//check game state vars
+								
+								animateOpponentSelection(opponentGame.blockSelection);
+								
+								PersGlobals.getGlobals().addAllChosenWords(opponentGame.newChosenWords);
+								opponentVersion = opponentGame.gameVersion;
+							}
+								
+						}
+					}
+				}
+				
+				return null;
+				
+				
+			}
+			
+		};
+		pollingServer.execute(key);
+		PersGlobals.getGlobals().setPollingTask(pollingServer);
+	}
 	
+	private void resetOtherUserBlocks(){//reset the opponent selected blocks
+		for(int i = 0; i < goodOtherUserBlocks.size(); i++){						
+			Rect xy = goodOtherUserBlocks.get(i);
+			Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
+			postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
+		}
+		for(int i = 0; i < badOtherUserBlocks.size(); i++){						
+			Rect xy = badOtherUserBlocks.get(i);
+			Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
+			postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
+		}
+		goodOtherUserBlocks.clear();
+		badOtherUserBlocks.clear();
+		}
+	
+	/**
+	 * invalidates the blocks in goodSelection, with a delay
+	 * the delay gives some semblance of animation
+	 */
+	private void animateOpponentSelection(int[][] opponentSelection){
+		//TODO replaces otherUserBlocks, so might miss some opponent actions
+		if (opponentSelection != null){
+			for (int x = 0; x < PersGlobals.getGlobals().getNumberOfBlocks(); x++){
+				for (int y = 0; y < PersGlobals.getGlobals().getNumberOfBlocks(); y++){
+					int blockAtXY = opponentSelection[x][y];
+					if (blockAtXY == 1 || blockAtXY == -1){
+						Log.d(TAG, "going to invalidate at " + x + " " + y);
+						//change rect dimensions from normalized blocks to pixels
+						Rect xy = new Rect();
+						xy.top = y * blockWidth;
+						xy.bottom = (y + 1) * blockWidth;
+						xy.left = x * blockWidth;
+						xy.right = (x + 1) * blockWidth;
+						Log.d(TAG, "animating opponent selection at " + xy.left + ", " + xy.top);
+						postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
+						if (blockAtXY == 1){
+							goodOtherUserBlocks.add(xy);
+						}
+						else{
+							badOtherUserBlocks.add(xy);
+						}
+					}
+				}
+			}
+			
+		}
+	}
 }
