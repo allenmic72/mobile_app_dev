@@ -17,5 +17,8 @@
    <color name="boggle_main">#7F634714</color>
    <color name="pers_boggle_otherUserGoodWord">#1766FF33</color>
    <color name="pers_boggle_otherUserBadWord">#17FF3333</color>
-    
+   <color name="pers_boggle_board_line">#EE553D11</color>
+   <color name="pers_boggle_user_text">#FF75FF33</color>
+   <color name="pers_boggle_opponent_text">#FFFF4033</color>
+   
 </resources>

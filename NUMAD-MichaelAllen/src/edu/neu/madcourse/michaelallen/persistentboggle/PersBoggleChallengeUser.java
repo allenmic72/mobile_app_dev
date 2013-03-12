@@ -55,15 +55,17 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							
 							if (phoneNum != null){
 								Calendar c = Calendar.getInstance();
+								Gson gson = new Gson();
 								Date date = c.getTime();
-								String dateString = date.toString();
+								String dateString = gson.toJson(date);
 								
 								Log.d("challenge this num", "challenging " + phoneNum);
 								GCMServlet serv = new GCMServlet();
 						        Builder mesBuilder = new Message.Builder();
 						        mesBuilder.addData("username", username);
 						        mesBuilder.addData("phoneNum", phoneNum);
-						        mesBuilder.addData("message", "What up bro it's" + dateString);
+						        mesBuilder.addData("message", "What up bro");
+						        mesBuilder.addData("time", dateString);
 						        serv.sendMessage(mesBuilder.build(), phoneNum);
 							}
 							

@@ -1,5 +1,7 @@
 package edu.neu.madcourse.michaelallen;
 
+import java.util.Date;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -20,6 +22,7 @@ import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersGlobals;
 
 import com.google.android.gcm.GCMBaseIntentService;
+import com.google.gson.Gson;
 
 import edu.neu.mobileclass.apis.KeyValueAPI;
 
@@ -46,8 +49,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String username = (String) extras.get("username");
 		String phoneNum = (String) extras.get("phoneNum");
 		String message = (String) extras.get("message");
+		String timeJson = (String) extras.get("time");
+		
 		Log.d(TAG, "Message: " + message + ", from" + username + " at " + phoneNum);
-		generateNotification(c, username);
+		generateNotification(c, username, timeJson);
 		
 	}
 
@@ -105,9 +110,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 /**
      * Issues a notification to inform the user that server has sent a message.
      */
-    private static void generateNotification(Context context, String username) {
+    private static void generateNotification(Context context, String username, String time) {
         Vibrator v = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
-        v.vibrate(75);
+        v.vibrate(100);
         int icon = R.drawable.ic_launcher;
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -122,6 +127,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
         Intent notificationIntent = new Intent(context, PersBoggleGame.class);
         notificationIntent.putExtra("opponent", username);
+        notificationIntent.putExtra("time", time);
         
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(PersBoggleMain.class);

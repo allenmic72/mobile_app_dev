@@ -34,7 +34,7 @@ public class PersBoggleGameView extends View {
 	private float viewHeight;
 	private int blockWidth;
 	private ArrayList<Rect> selectedBlocks;
-	private ArrayList<String> selectedLetters;
+	private String selectedLetters;
 	
 	private ArrayList<Rect> goodSelectionBlocks;
 	private ArrayList<Rect> badSelectionBlocks;
@@ -48,24 +48,23 @@ public class PersBoggleGameView extends View {
 	private Rect otherUserRect = new Rect();
 	
 	private int opponentVersion;
-	private int myVersion;
 	
 	public PersBoggleGameView(Context context, AttributeSet attrs) {
 		super(context);
 		this.game = (PersBoggleGame) context;
 		
 		selectedBlocks = new ArrayList<Rect>();
-		selectedLetters = new ArrayList<String>();
+		selectedLetters = "";
 		goodSelectionBlocks = new ArrayList<Rect>();
 		badSelectionBlocks = new ArrayList<Rect>();
 		goodOtherUserBlocks = new ArrayList<Rect>();
 		badOtherUserBlocks = new ArrayList<Rect>();
 		
-		myVersion = 0;
+		
 		opponentVersion = 0;
 		this.setBackgroundResource(R.drawable.bogglebck);
 		
-		startPollingServer(PersGlobals.getGlobals().getUsername() + PersGlobals.getGlobals().getUsername());
+		startPollingServer(PersGlobals.getGlobals().getUsername() + PersGlobals.getGlobals().getUsername(), this.game);
 	}
 	
 	@Override
@@ -84,11 +83,11 @@ public class PersBoggleGameView extends View {
 	
 	@Override
 	protected void onDraw(Canvas canvas){
-		int greenBlueTranslucent = Color.argb(95, 0, 100, 210);
+		int brownTranslucent = getResources().getColor(R.color.pers_boggle_board_line);
 		
 		Paint boardPaint;
 		boardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		boardPaint.setColor(greenBlueTranslucent);
+		boardPaint.setColor(brownTranslucent);
 		boardPaint.setStyle(Paint.Style.STROKE);
 		boardPaint.setStrokeWidth(8);
 		
@@ -196,7 +195,7 @@ public class PersBoggleGameView extends View {
 				
 				selectedBlocks.add(block);
 				String touchedLetter = getTouchedLetter(x, y);
-				selectedLetters.add(touchedLetter);
+				selectedLetters += touchedLetter;
 				this.game.addToSelectedLetterTextView(touchedLetter);
 				invalidate(block);
 			}
@@ -214,7 +213,7 @@ public class PersBoggleGameView extends View {
 				if (block1 != null){
 					selectedBlocks.add(block1);
 					String touchedLetter = getTouchedLetter(x, y);
-					selectedLetters.add(touchedLetter);
+					selectedLetters += touchedLetter;
 					this.game.addToSelectedLetterTextView(touchedLetter);
 					invalidate(block1);
 				}
@@ -331,18 +330,45 @@ public class PersBoggleGameView extends View {
 	private void checkSelectedLetters(){
 		boolean goodWord = this.game.checkWordAndRewardUser(selectedLetters);
 		ArrayList<Rect> selectionAnimationBlocks;
+		int goodOrBad = -1;
+		int[][] selectionMatrix;
+		
 		if (goodWord){
 			selectionAnimationBlocks = goodSelectionBlocks;
-			
+			goodOrBad = 1;
 		}
 		else{
 			selectionAnimationBlocks = badSelectionBlocks;
 		}
 		
+		selectionMatrix = convertRectsToMatrix(selectedBlocks, goodOrBad);
+		this.game.packageGameStateAndPublish(selectionMatrix);
 		
 		clearAllSelections(selectionAnimationBlocks);
 	}
 	
+	/**
+	 * convert the rect arraylist into a matrix of blocks, 
+	 * with an int value indicating a selected block
+	 * @param selectedBlocks the blocks that the user selected to form a word
+	 * @param goodOrBad: 1 indicates a good word selection, -1 a bad one 
+	 * @return
+	 */
+	private int[][] convertRectsToMatrix(ArrayList<Rect> selectedBlocks, int goodOrBad) {
+		int size = PersGlobals.getGlobals().getNumberOfBlocks();
+		int[][] matrix = new int[size][size];
+		
+		Log.d(TAG, "selected blocks: " + selectedBlocks);
+		
+		for (int i = 0; i < selectedBlocks.size(); i++){
+			Rect r = selectedBlocks.get(i);
+			int x = r.left / blockWidth;
+			int y = r.top / blockWidth;
+			matrix[x][y] = goodOrBad;
+		}
+		
+		return matrix;
+	}
 
 	/**
 	 * invalidates all selected blocks,
@@ -365,9 +391,8 @@ public class PersBoggleGameView extends View {
 			invalidate(block);
 		}
 		
-		packageGameStateAndPublish();
 		
-		selectedLetters.clear();
+		selectedLetters = "";
 		selectedBlocks.clear();
 		
 		createTimerToRemoveAnimationOnBlocks();		
@@ -422,67 +447,6 @@ public class PersBoggleGameView extends View {
 		
 	}
 	
-	private void packageGameStateAndPublish() {
-		ArrayList<Rect> selectedBlocks;
-		int goodOrBad = -1;
-		if (!goodSelectionBlocks.isEmpty()){
-			selectedBlocks = goodSelectionBlocks;
-			goodOrBad = 1;
-		}
-		else{
-			selectedBlocks = badSelectionBlocks;
-		}
-		
-		
-		PersBoggleGameState state = new PersBoggleGameState();
-		Log.d(TAG, "selected blocks: " + selectedBlocks);
-		int[][] goodSelection = convertRectsToMatrix(selectedBlocks, goodOrBad);
-		
-		//TODO global vars for all the game state vars
-		state.blockSelection = goodSelection;
-		myVersion++;
-		state.gameVersion = myVersion;
-		publishChangesToServer(state);
-	}
-
-	private int[][] convertRectsToMatrix(ArrayList<Rect> selectedBlocks, int goodOrBad) {
-		int size = PersGlobals.getGlobals().getNumberOfBlocks();
-		int[][] matrix = new int[size][size];
-		
-		for (int i = 0; i < selectedBlocks.size(); i++){
-			Rect r = selectedBlocks.get(i);
-			int x = r.left / blockWidth;
-			int y = r.top / blockWidth;
-			matrix[x][y] = goodOrBad;
-		}
-		
-		return matrix;
-	}
-	
-	/**
-	 * Publishes a new PersBoggleGameState to the server
-	 * puts to key "username" + "opponent"
-	 */
-	private void publishChangesToServer(PersBoggleGameState gameState){
-		new AsyncTask<PersBoggleGameState, Void, Void>(){
-
-			@Override
-			protected Void doInBackground(PersBoggleGameState... params) {
-				PersBoggleGameState gameState = params[0];
-				if(KeyValueAPI.isServerAvailable()){
-					Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-					String json = gson.toJson(gameState);
-					KeyValueAPI.put("allenmic", "allenmic", 
-							PersGlobals.getGlobals().getUsername() +
-							PersGlobals.getGlobals().getOpponent(), json);
-					Log.d(TAG, "putting " + json);
-				}
-				return null;
-			}
-			
-		}.execute(gameState);
-	}
-	
 	/**
 	 * Starts polling and continues until cancelled
 	 * checks "opponent" + "username" key
@@ -490,7 +454,7 @@ public class PersBoggleGameView extends View {
 	 * and animates the board based on new words the opponent has selected
 	 * @param key
 	 */
-	private void startPollingServer(final String key){
+	private void startPollingServer(final String key, final PersBoggleGame game){
 		//final PersBoggleGameView gameView = (PersBoggleGameView) findViewById(R.id.pers_boggle_game_view);
 		
 		AsyncTask<String, Void, Void> pollingServer = new AsyncTask<String, Void, Void>(){
@@ -534,7 +498,17 @@ public class PersBoggleGameView extends View {
 								
 								animateOpponentSelection(opponentGame.blockSelection);
 								
-								PersGlobals.getGlobals().addAllChosenWords(opponentGame.newChosenWords);
+								if (opponentGame.priorChosenWords != null && !opponentGame.priorChosenWords.isEmpty()){
+									PersGlobals.getGlobals().setOpponentPriorWords(opponentGame.priorChosenWords);
+								}
+								
+								if (opponentGame.score > 0){
+									Log.d(TAG, "opponent score is now " + opponentGame.score);
+									boolean b = game.handler.sendEmptyMessage(opponentGame.score);
+									Log.d(TAG, "message placing successful? " + b);
+									
+								}
+								
 								opponentVersion = opponentGame.gameVersion;
 							}
 								

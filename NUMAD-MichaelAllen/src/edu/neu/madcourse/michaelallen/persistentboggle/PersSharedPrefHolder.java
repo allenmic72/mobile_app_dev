@@ -13,7 +13,10 @@ public class PersSharedPrefHolder{
 	public int score;
 	
 	@Expose
-	public ArrayList<String> priorChosenWords;
+	public ArrayList<String> userPriorChosenWords;
+	
+	@Expose
+	public ArrayList<String> opponentPriorChosenWords;
 	
 	@Expose
 	public boolean newGame;
@@ -23,4 +26,6 @@ public class PersSharedPrefHolder{
 	
 	@Expose
 	public boolean isPaused;
+
+	
 }

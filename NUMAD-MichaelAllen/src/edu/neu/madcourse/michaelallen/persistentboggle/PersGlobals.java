@@ -20,7 +20,9 @@ public class PersGlobals{
 	
 	private int score = 0;
 	
-	private ArrayList<String> priorChosenWords = new ArrayList<String>();
+	private ArrayList<String> userPriorChosenWords = new ArrayList<String>();
+	private ArrayList<String> opponentPriorChosenWords = new ArrayList<String>();
+	private ArrayList<String> combinedPriorChosenWords = new ArrayList<String>();
 	
 	private boolean newGame = false;
 	
@@ -153,22 +155,46 @@ public class PersGlobals{
 		score = n;
 	}
 	
-	public ArrayList<String> getPriorWords(){
-		final ArrayList<String> words = priorChosenWords;
+	public ArrayList<String> getUserPriorWords(){
+		final ArrayList<String> words = userPriorChosenWords;
 		return words;
 	}
 	
-	public void putPriorWords(ArrayList<String> priors){
-		priorChosenWords = priors;
+	public ArrayList<String> getCombinedPriorWords(){
+		final ArrayList<String> words = combinedPriorChosenWords;
+		return words;
+	}
+	
+	public void setUserPriorWords(ArrayList<String> priors){
+		userPriorChosenWords = priors;
+		combinedPriorChosenWords = userPriorChosenWords;
+		combinedPriorChosenWords.addAll(opponentPriorChosenWords);
+		
 	}
 	
 	public void addChosenWord(String word){
-		priorChosenWords.add(word);
+		userPriorChosenWords.add(word);
+		combinedPriorChosenWords.add(word);
 	}
 	
 	public void addAllChosenWords(ArrayList<String> chosenWords){
-		priorChosenWords.addAll(chosenWords);
+		userPriorChosenWords.addAll(chosenWords);
+		combinedPriorChosenWords.addAll(chosenWords);
 	}
+	
+	public ArrayList<String> getOpponentPriorWords(){
+		final ArrayList<String> words = opponentPriorChosenWords;
+		return words;
+	}
+	
+	public void setOpponentPriorWords(ArrayList<String> priors){
+		opponentPriorChosenWords = priors;
+		combinedPriorChosenWords = opponentPriorChosenWords;
+		combinedPriorChosenWords.addAll(userPriorChosenWords);
+		
+	}
+	
+	
 	
 	public void setNumberOfBlocks(int n){
 		numberOfBlocks = n;
@@ -181,7 +207,7 @@ public class PersGlobals{
 	public void resetAllVariables(){
 		boardLetters = new String[numberOfBlocks][numberOfBlocks];
 		score = 0;
-		priorChosenWords = new ArrayList<String>();
+		userPriorChosenWords = new ArrayList<String>();
 		timerVal = 120; 
 		gameTimer = null;
 		isPaused = false;

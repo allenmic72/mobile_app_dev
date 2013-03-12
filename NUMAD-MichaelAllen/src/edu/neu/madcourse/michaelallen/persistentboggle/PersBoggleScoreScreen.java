@@ -37,7 +37,7 @@ public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 		
 		TextView wordsFound = (TextView) findViewById(R.id.pers_boggle_score_screen_words);
 		String wordsFoundText = "";
-		ArrayList<String> foundWords = PersGlobals.getGlobals().getPriorWords();
+		ArrayList<String> foundWords = PersGlobals.getGlobals().getUserPriorWords();
 		for (int i = 0; i < foundWords.size(); i++){
 			wordsFoundText = wordsFoundText + " " + foundWords.get(i);
 		}

@@ -16,7 +16,7 @@ public class PersBoggleGameState{
 	public int gameVersion;
 	
 	@Expose
-	public boolean isPaused;
+	public boolean isPaused = false;
 	
 	@Expose
 	public int score;
@@ -28,7 +28,7 @@ public class PersBoggleGameState{
 	public int[][] blockSelection = new int[5][5];
 	
 	@Expose
-	public ArrayList<String> newChosenWords = new ArrayList<String>();
+	public ArrayList<String> priorChosenWords;
 	
 	
 }
