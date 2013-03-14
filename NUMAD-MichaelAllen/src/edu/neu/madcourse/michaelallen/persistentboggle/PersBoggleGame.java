@@ -40,7 +40,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	
 	
 	String opponent;
-	
+	boolean leader;
 	
 	private final String TAG = "PersBoggleGame";
 	int myVersion;
@@ -51,6 +51,9 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		
 		opponent = getIntent().getStringExtra("opponent");
 		PersGlobals.getGlobals().setOpponent(opponent);
+		
+		leader = getIntent().getBooleanExtra("leader", false);
+		PersGlobals.getGlobals().setLeader(leader);
 		
 		myVersion = 0;
 		
@@ -70,6 +73,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		userText.setText(PersGlobals.getGlobals().getUsername());
 		opponentText.setText(opponent);
 		
+		//TODO change this?
 		if (resumed == 1){
 			putSharedPreferences();
 			if (PersGlobals.getGlobals().getIsPaused()){

@@ -275,7 +275,6 @@ class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
 	@Override
 	protected Void doInBackground(String... params) {
 		String username = params[0];
-		
 		if(KeyValueAPI.isServerAvailable()){
 			String jsonFromServer = KeyValueAPI.get("allenmic", "allenmic", "usernames");
 			Log.d("addToarray", "json array on server is " + jsonFromServer);

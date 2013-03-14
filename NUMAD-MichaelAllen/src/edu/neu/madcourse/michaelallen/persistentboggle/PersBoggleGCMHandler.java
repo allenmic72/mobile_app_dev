@@ -22,11 +22,12 @@ public class PersBoggleGCMHandler{
 	Bundle extras;
 	Context context;
 	
-	PersBoggleGCMHandler(Context contex, Intent gcm){
+	public PersBoggleGCMHandler(Context context, Intent gcm){
 		this.context = context;
 		this.gcm = gcm;
 		if (this.gcm.getExtras() != null){
 			this.extras = this.gcm.getExtras();
+			processMessage();
 		}
 		else{
 			Log.d("GCMHandler", "Error: invalid GCM. No Extras");
@@ -50,7 +51,7 @@ public class PersBoggleGCMHandler{
 	}
 	
 	private void identifyAndHandleMessageType(String type){
-		if (type == "challenge"){
+		if (type.equals("challenge")){
 			setChallengedNotification();
 		}
 		else if (type == "declined"){
@@ -66,7 +67,7 @@ public class PersBoggleGCMHandler{
 	
 	private void setChallengedNotification(){
 		Gson gson = new Gson();
-		Date timeSent = gson.fromJson(getExtraString("time"), Date.class);
+		String timeSent = getExtraString("time");
 		String opponent = getExtraString("opponent");
 		
 		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
@@ -98,8 +99,11 @@ public class PersBoggleGCMHandler{
                 );
         notification.setContentIntent(pendingIntent);
         
+        Log.d("", "intent created");
+        
         notificationManager.notify(opponent.hashCode(), notification.build());
         
+        Log.d("", "intent created 1111");
 	}
 	
 }

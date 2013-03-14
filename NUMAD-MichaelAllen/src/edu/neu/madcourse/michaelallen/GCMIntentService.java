@@ -17,6 +17,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import edu.neu.madcourse.michaelallen.MainActivity;
+import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleGCMHandler;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleGame;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersGlobals;
@@ -51,8 +52,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String message = (String) extras.get("message");
 		String timeJson = (String) extras.get("time");
 		
-		Log.d(TAG, "Message: " + message + ", from" + username + " at " + phoneNum);
-		generateNotification(c, username, timeJson);
+		PersBoggleGCMHandler gcmHandler = new PersBoggleGCMHandler(c, intent);
+		//generateNotification(c, username, timeJson);
 		
 	}
 

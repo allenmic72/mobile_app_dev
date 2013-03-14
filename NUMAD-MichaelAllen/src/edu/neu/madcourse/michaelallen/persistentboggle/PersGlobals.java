@@ -53,6 +53,8 @@ public class PersGlobals{
 	
 	private AsyncTask<String, Void, Void> pollingServer;
 	
+	private boolean leader = false;
+	
 	private static class GlobalHolder{
 		private static final PersGlobals INSTANCE = new PersGlobals();
 	}
@@ -273,6 +275,14 @@ public class PersGlobals{
 		if (pollingServer != null){
 			pollingServer.cancel(true);
 		}
+	}
+	
+	public void setLeader(boolean l){
+		leader = l;
+	}
+	
+	public boolean returnLeader(){
+		return leader;
 	}
 	
 	public static PersGlobals getGlobals(){

@@ -11,8 +11,12 @@ import com.google.gson.Gson;
 import edu.neu.madcourse.michaelallen.R;
 import edu.neu.mobileclass.apis.KeyValueAPI;
 import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,7 +28,8 @@ import android.widget.TextView;
 
 public class PersBoggleChallengeUser extends Activity implements OnClickListener{
 	
-	private ListView listv ; 
+	AsyncTask<String, Void, Void> waitUntilUserAccepts;
+	CountDownTimer goForFiveMinutes;
 	
 	protected void onCreate(Bundle savedInstanceState) {    	
     	super.onCreate(savedInstanceState);
@@ -39,6 +44,8 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
     	
     	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.pers_boggle_challenge_textview, otherUsers);
     	
+    	
+    	
     	listv.setOnItemClickListener(new OnItemClickListener() {
 
 			public void onItemClick(AdapterView<?> arg0, View view, int position,
@@ -49,11 +56,14 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 
 					protected Void doInBackground(Void... params) {
 						if (KeyValueAPI.isServerAvailable()){
-							String username = otherUsers.get(idClicked);
-							String phoneNum = KeyValueAPI.get("allenmic", "allenmic", username);
+							String opponent = otherUsers.get(idClicked);
+							String phoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);
+							
 							
 							
 							if (phoneNum != null){
+								waitUntilUserAccepts = new waitUntilUserAcceptsChallenge();
+								
 								Calendar c = Calendar.getInstance();
 								Gson gson = new Gson();
 								Date date = c.getTime();
@@ -62,11 +72,29 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 								Log.d("challenge this num", "challenging " + phoneNum);
 								GCMServlet serv = new GCMServlet();
 						        Builder mesBuilder = new Message.Builder();
-						        mesBuilder.addData("username", username);
+						        mesBuilder.addData("opponent", opponent);
 						        mesBuilder.addData("phoneNum", phoneNum);
 						        mesBuilder.addData("message", "What up bro");
 						        mesBuilder.addData("time", dateString);
+						        mesBuilder.addData("type", "challenge");
 						        serv.sendMessage(mesBuilder.build(), phoneNum);
+						        
+						        
+						        waitUntilUserAccepts.execute(opponent);
+						        goForFiveMinutes = new CountDownTimer(300000, 300000){
+
+									@Override
+									public void onFinish() {
+										waitUntilUserAccepts.cancel(true);
+										
+									}
+
+									@Override
+									public void onTick(long millisUntilFinished) {
+										
+									}
+						        	
+						        }.start();
 							}
 							
 						}
@@ -94,4 +122,39 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 		}
 		
 	}
+	
+	private boolean canAccessNetwork() {
+	    ConnectivityManager connectivityManager 
+	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    if (activeNetworkInfo != null){
+	    	return true;
+	    }
+	    else{
+	    	return false;
+	    }
+	    
+	}
+}
+
+class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
+	
+	@Override
+	protected Void doInBackground(String... params) {
+		String opponent = params[0];
+		while(!this.isCancelled()){
+
+			if (KeyValueAPI.isServerAvailable()){
+				Gson gson = new Gson();
+				String gameState = KeyValueAPI.get("allenmic", "allenmic", opponent + PersGlobals.getGlobals().getUsername());
+				if (gameState != null && gameState != ""){
+					gson.fromJson(gameState, PersBoggleGameState.class);
+					
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 }
