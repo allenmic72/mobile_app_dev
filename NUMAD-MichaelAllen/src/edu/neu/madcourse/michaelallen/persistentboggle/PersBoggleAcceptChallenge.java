@@ -14,12 +14,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-public class PersBoggleNotificationClicked extends Activity implements OnClickListener{
+public class PersBoggleAcceptChallenge extends Activity implements OnClickListener{
+	String opponent;
+	String username;
 	
 	protected void onCreate(Bundle savedInstanceState) {    	
     	super.onCreate(savedInstanceState);
-    	
-    	Log.d("TATATA", "test");
     	
     	setContentView(R.layout.pers_boggle_accept_challenge);
     	
@@ -32,8 +32,13 @@ public class PersBoggleNotificationClicked extends Activity implements OnClickLi
     	View decline = findViewById(R.id.pers_boggle_decline);
     	decline.setOnClickListener(this);
     	
+    	
+    	
     	Gson gson = new Gson();
     	Date timeSent = gson.fromJson(getIntent().getStringExtra("time"), Date.class);
+    	
+    	opponent = getIntent().getStringExtra("opponent");
+    	username = getIntent().getStringExtra("username");
     	
     	if (withinLastFiveMinutes(timeSent)){
     		acceptSync.setVisibility(View.VISIBLE);
@@ -55,12 +60,18 @@ public class PersBoggleNotificationClicked extends Activity implements OnClickLi
 		case R.id.pers_boggle_accept_sync:
 			Intent sync = new Intent(this, PersBoggleGame.class);
 			sync.putExtra("status", "sync");
+			sync.putExtra("leader", true);
+			sync.putExtra("opponent", opponent);
+			sync.putExtra("username", username);
 			startActivity(sync);
 			finish();
 			break;
 		case R.id.pers_boggle_accept_async:
 			Intent async = new Intent(this, PersBoggleGame.class);
 			async.putExtra("status", "async");
+			async.putExtra("leader", true);
+			async.putExtra("opponent", opponent);
+			async.putExtra("username", username);
 			startActivity(async);
 			finish();
 			break;

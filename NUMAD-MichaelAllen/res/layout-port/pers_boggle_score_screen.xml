@@ -4,8 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="45dip"
-    android:background="@drawable/score_scrn_gradient">
+    android:padding="40dip"
+    android:background="@drawable/score_scrn_gradient"
+    android:typeface="serif">
     
     <TextView
         android:id="@+id/pers_boggle_score_textview"
@@ -20,15 +21,24 @@
         android:layout_width="match_parent"
     	android:layout_height="wrap_content" 
     	android:text=""
-    	android:textSize="24sp" >
+    	android:textSize="16sp" >
     </TextView>
+    
+    <TextView
+        android:id="@+id/pers_boggle_score_screen_opponent_words"
+        android:layout_width="match_parent"
+    	android:layout_height="wrap_content" 
+    	android:text=""
+    	android:textSize="16sp"
+        />
     
     <Button
         android:id="@+id/pers_boggle_main_screen_button"
         android:layout_width="match_parent"
     	android:layout_height="wrap_content" 
     	android:text="@string/boggle_main_screen_text"
-    	android:textSize="24sp">
+    	android:textSize="24sp"
+    	android:background="@drawable/button_selector">
     </Button>
 
 </LinearLayout>

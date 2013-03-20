@@ -54,6 +54,8 @@ public class PersGlobals{
 	private AsyncTask<String, Void, Void> pollingServer;
 	
 	private boolean leader = false;
+	private String status = "";
+	private String opponentPriorWordString = "";
 	
 	private static class GlobalHolder{
 		private static final PersGlobals INSTANCE = new PersGlobals();
@@ -281,8 +283,24 @@ public class PersGlobals{
 		leader = l;
 	}
 	
-	public boolean returnLeader(){
+	public boolean getLeader(){
 		return leader;
+	}
+	
+	public void setStatus(String s){
+		status = s;
+	}
+	
+	public String getStatus(){
+		return status;
+	}
+	
+	public String getOpponentPriorWordString(){
+		return opponentPriorWordString;
+	}
+	
+	public void setOpponentPriorWordString(String foundWords){
+		opponentPriorWordString = foundWords;
 	}
 	
 	public static PersGlobals getGlobals(){

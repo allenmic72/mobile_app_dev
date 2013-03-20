@@ -109,7 +109,7 @@
             android:label="@string/pers_boggle_challenge_user_label">
         </activity>
         <activity
-            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleNotificationClicked"
+            android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleAcceptChallenge"
             android:label="@string/pers_boggle_accept_challenge_label">
         </activity>
         <activity android:name="edu.neu.madcourse.michaelallen.sudoku.Sudoku"

@@ -18,7 +18,11 @@
    <color name="pers_boggle_otherUserGoodWord">#1766FF33</color>
    <color name="pers_boggle_otherUserBadWord">#17FF3333</color>
    <color name="pers_boggle_board_line">#EE553D11</color>
-   <color name="pers_boggle_user_text">#FF75FF33</color>
-   <color name="pers_boggle_opponent_text">#FFFF4033</color>
+   <color name="pers_boggle_user_drawLine">#FF696969</color>
+   <color name="pers_boggle_letter_text">#FFEEEEEE</color>
+   <color name="pers_boggle_game_background">#00AAAAAA</color>
+   <color name="text_shadow">#7F000000</color>
+   <color name="pers_boggle_user_text">#FF9933CC</color>
+   <color name="pers_boggle_opponent_text">#FFCC0000</color>
    
 </resources>

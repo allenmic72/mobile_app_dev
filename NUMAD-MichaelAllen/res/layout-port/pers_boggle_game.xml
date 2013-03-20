@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:paddingLeft="16dp"
     android:paddingRight="16dp" 
-    android:background="@drawable/light_brown_gradient">
+    android:background="@drawable/pers_boggle_game_gradient"
+    android:typeface="serif">
     
  	<Button 
         android:id="@+id/pers_boggle_game_quit"
@@ -14,6 +15,12 @@
         android:layout_alignParentLeft="true"
         android:textSize="12sp"
         android:gravity="center"
+        android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:textStyle="bold"
         />
  	
     <TextView 
@@ -22,6 +29,10 @@
         android:layout_height="wrap_content"
         android:textSize="30sp"
         android:gravity="center"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
         />
     
     <Button
@@ -32,6 +43,12 @@
         android:textSize="12sp"
         android:gravity="center"
         android:layout_alignParentRight="true"
+        android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:textStyle="bold"
         />
     
     <TextView
@@ -41,13 +58,18 @@
         android:textSize="24sp"
         android:gravity="center"
         android:layout_below="@id/pers_boggle_game_timer"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
         />
     
     <edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleGameView
         android:id="@+id/pers_boggle_game_view"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/pers_boggle_game_selected" />
+        android:layout_below="@id/pers_boggle_game_selected"
+         />
      
      <TextView
         android:id="@+id/pers_boggle_game_user"
@@ -59,6 +81,7 @@
         android:textSize="24sp"
         android:textColor="@color/pers_boggle_user_text"
         android:typeface="monospace"
+        android:textStyle="bold"
         />
      
     <TextView
@@ -80,10 +103,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:textSize="24sp"
+        android:textSize="26sp"
         android:gravity="right"
         android:textColor="@color/pers_boggle_opponent_text"
         android:typeface="monospace"
+        android:textStyle="bold"
         />
      
      <TextView
@@ -97,6 +121,30 @@
         android:textColor="@color/pers_boggle_opponent_text"
         android:typeface="serif"
         />
+     
+     <TextView
+        android:id="@+id/pers_boggle_game_opponent_words"
+        android:text=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/pers_boggle_game_currentscore"
+        android:layout_alignParentLeft="true"
+        android:textSize="8sp"
+        android:textColor="@color/pers_boggle_opponent_text"
+        android:typeface="serif"
+         />
+     
+      <TextView
+        android:id="@+id/pers_boggle_game_user_words"
+        android:text=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/pers_boggle_game_opponent_words"
+        android:layout_alignParentLeft="true"
+        android:textSize="8sp"
+        android:textColor="@color/pers_boggle_user_text"
+        android:typeface="serif"
+         />
    
     
 

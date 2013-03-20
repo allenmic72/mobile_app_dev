@@ -1,63 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/brown_gradient"
-    android:gravity="center"
-    android:padding="45dip"> 
+    android:background="@drawable/pers_boggle_game_gradient"
+    android:paddingLeft="40dp"
+    android:paddingRight="40dp"
+    android:paddingTop="30dp"
+    android:paddingBottom="30dp"
+    android:typeface="sans"
+    android:textSize="8sp"> 
     
-    <TextView
-        android:text="@string/boggle_main_title"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_marginBottom="10dip"
-        android:textSize="28sp"
+    <TextView 
+        android:id="@+id/placeholder"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_alignParentTop="true"
         />
+    
+    <edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleTitleView
+        android:id="@+id/pers_boggle_title_view"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        />
+    
+     <Button
+        android:id="@+id/pers_boggle_exit_button"
+        android:layout_alignParentBottom="true"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="@string/exit_label"
+	    android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+	    />
+   	<Button
+        android:id="@+id/pers_boggle_high_scores"
+        android:layout_above="@id/pers_boggle_exit_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/boggle_high_scores_label"
+        android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        />
+   	<Button
+        android:id="@+id/pers_boggle_acknowledgements_button"
+        android:layout_above="@id/pers_boggle_high_scores"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/boggle_acknowledgements_label"
+        android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        />  
+	<Button 
+        android:id="@+id/pers_boggle_rules_button"
+        android:layout_above="@id/pers_boggle_acknowledgements_button"
+        android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="@string/boggle_rules_label"
+	    android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+	    />             
+	<Button
+        android:id="@+id/pers_boggle_new_game_button"
+        android:layout_above="@id/pers_boggle_rules_button"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="@string/boggle_new_game_label"
+	    android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+	    />
+	<Button
+        android:id="@+id/pers_boggle_challenge_button"
+        android:layout_above="@id/pers_boggle_new_game_button"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="@string/pers_boggle_challenge_user_label"
+	    android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        />    
     <Button
         android:id="@+id/pers_boggle_continue_button"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
+	    android:layout_above="@id/pers_boggle_challenge_button"
 	    android:text="@string/boggle_continue_button_label"
 	    android:visibility="invisible"
+	    android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
         />
-    <Button
-        android:id="@+id/pers_boggle_challenge_button"
-	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:text="@string/pers_boggle_challenge_user_label"
-        />
-    <Button
-        android:id="@+id/pers_boggle_new_game_button"
-	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:text="@string/boggle_new_game_label"
-	    />
-    <Button 
-        android:id="@+id/pers_boggle_rules_button"
-        android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:text="@string/boggle_rules_label"
-	    />
     
-    <Button
-        android:id="@+id/pers_boggle_acknowledgements_button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/boggle_acknowledgements_label"
-        />
-    <Button
-        android:id="@+id/pers_boggle_high_scores"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/boggle_high_scores_label"
-        />
-    <Button
-        android:id="@+id/pers_boggle_exit_button"
-	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:text="@string/exit_label"
-	    />
+    
+    
+    
+ 
+  
     
 
-</LinearLayout>
+</RelativeLayout>

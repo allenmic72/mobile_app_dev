@@ -126,8 +126,10 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 			 startActivity(boggleRules);
 			 break;
 		 case R.id.pers_boggle_challenge_button:
-			 Intent boggleChallenge = new Intent(this, PersBoggleChallengeUser.class);
-			 startActivity(boggleChallenge);
+			 if (checkUserName()){
+				 Intent boggleChallenge = new Intent(this, PersBoggleChallengeUser.class);
+				 startActivity(boggleChallenge);
+			 }
 			 break;
 		 }
 		
@@ -212,9 +214,8 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 				Log.d("promptUserForUsername", "saved username to sPref and Globals" + username);
 				
 				//Start a new game now that we have a username
-				Intent boggleGame = new Intent(c, PersBoggleGame.class);
-				startActivity(boggleGame);
-				PersGlobals.getGlobals().setNewGame(true);
+				Intent challengeUser = new Intent(c, PersBoggleChallengeUser.class);
+				startActivity(challengeUser);
 					
 			}
 		});

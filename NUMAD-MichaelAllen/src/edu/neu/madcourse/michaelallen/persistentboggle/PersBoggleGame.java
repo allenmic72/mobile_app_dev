@@ -41,19 +41,39 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	
 	String opponent;
 	boolean leader;
+	String status;
+	String username;
 	
 	private final String TAG = "PersBoggleGame";
 	int myVersion;
 	Handler handler;
+	TextView userWords;
+	TextView opponentWords;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		if(PersGlobals.getGlobals().getUsername() == ""){
+			PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
+			PersGlobals.getGlobals().setUsername(spref.getString(this, "username"));
+		}
 		
 		opponent = getIntent().getStringExtra("opponent");
 		PersGlobals.getGlobals().setOpponent(opponent);
 		
 		leader = getIntent().getBooleanExtra("leader", false);
 		PersGlobals.getGlobals().setLeader(leader);
+		
+		status = getIntent().getStringExtra("status");
+		PersGlobals.getGlobals().setStatus(status);
+		
+		username = getIntent().getStringExtra("username");
+		if (username != null && username != ""){
+			PersGlobals.getGlobals().setUsername(username);
+		}
+		else{
+			username = PersGlobals.getGlobals().getUsername();
+		}
 		
 		myVersion = 0;
 		
@@ -70,9 +90,17 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		
 		TextView userText = (TextView) findViewById(R.id.pers_boggle_game_user);
 		TextView opponentText = (TextView) findViewById(R.id.pers_boggle_game_opponent);
+		
 		userText.setText(PersGlobals.getGlobals().getUsername());
 		opponentText.setText(opponent);
 		
+		userWords = (TextView) findViewById(R.id.pers_boggle_game_user_words);
+		opponentWords = (TextView) findViewById(R.id.pers_boggle_game_opponent_words);
+		
+		userWords.setText(username + " found: ");
+		opponentWords.setText(opponent + " found: ");
+		
+		Gson gson = new Gson();
 		//TODO change this?
 		if (resumed == 1){
 			putSharedPreferences();
@@ -87,9 +115,33 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	    	int sec = (int) (PersGlobals.getGlobals().getTimerVal() % 60);
 			timerTextView.setText("" + min + ":" + sec);
 		}
-		else{
+		else if (leader){
+			Log.d(TAG, "starting game as leader");
 			PersGlobals.getGlobals().resetAllVariables();
 			populateBoardWithLetters();
+			PersBoggleGameState state = new PersBoggleGameState();
+			state.gameStatus = status;
+			state.timerVal = PersGlobals.getGlobals().getTimerVal();
+			state.boardLetters = PersGlobals.getGlobals().getBoard();
+			
+			String json = gson.toJson(state);
+			PersBogglePutKeyValToServer publishGameToOpponent = new PersBogglePutKeyValToServer();
+			publishGameToOpponent.execute(PersGlobals.getGlobals().getUsername() + opponent, json);
+		}
+		else{
+			String state = getIntent().getStringExtra("state");
+			PersBoggleGameState gameState = gson.fromJson(state, PersBoggleGameState.class);
+			PersGlobals.getGlobals().resetAllVariables();
+			
+			
+			if (gameState.priorChosenWords != null && !gameState.priorChosenWords.isEmpty()){
+				PersGlobals.getGlobals().setOpponentPriorWords(gameState.priorChosenWords);
+			}
+			PersGlobals.getGlobals().setBoard(gameState.boardLetters);
+			PersGlobals.getGlobals().setStatus(gameState.gameStatus);
+			PersGlobals.getGlobals().setTimerVal(gameState.timerVal);
+			Log.d(TAG, "Starting " + gameState.gameStatus + " game against " + opponent);
+			Log.d(TAG, "Game against " + opponent + " with board " + gameState.boardLetters);
 		}
 		/*
 		int[][] test = new int[5][5];
@@ -109,6 +161,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			public void handleMessage (Message msg){
 				int n = msg.what;
 				setOpponentScore(n);
+				setOpponentWords();
 			}
 		};
 		
@@ -221,16 +274,18 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	 * the opponent will then update their game with the necessary information
 	 * and animate their board with the user's selection
 	 */
-	public void packageGameStateAndPublish(int[][] userSelection) {
+	private void packageGameStateAndPublish(String chosenWords) {
 		ArrayList<Rect> selectedBlocks;
 		PersBoggleGameState state = new PersBoggleGameState();
 		
 		state.score = PersGlobals.getGlobals().getScore();
 		
 		state.priorChosenWords = PersGlobals.getGlobals().getUserPriorWords();
+		state.foundWords = chosenWords;
+		
 		//TODO global vars for all the game state vars
 		//TODO on pause this has to be called
-		state.blockSelection = userSelection;
+		//state.blockSelection = userSelection;
 		myVersion++;
 		state.gameVersion = myVersion;
 		publishChangesToServer(state);
@@ -253,7 +308,8 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 					KeyValueAPI.put("allenmic", "allenmic", 
 							PersGlobals.getGlobals().getUsername() +
 							PersGlobals.getGlobals().getOpponent(), json);
-					Log.d(TAG, "putting " + json);
+					Log.d(TAG, "putting new game state to " + PersGlobals.getGlobals().getUsername() +
+							PersGlobals.getGlobals().getOpponent());
 				}
 				return null;
 			}
@@ -397,7 +453,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			String suffix = selectedWord.substring(3);
 			
 			InputStreamReader reader = new InputStreamReader(stream);
-			BufferedReader buf = new BufferedReader(reader);
+			BufferedReader buf = new BufferedReader(reader, 8192);
 			
 			String nextLine = buf.readLine();
 			while (nextLine != null){
@@ -441,6 +497,11 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		
 		PersGlobals.getGlobals().addChosenWord(word);
 		
+		String userWordString = (String) userWords.getText();
+		userWordString += word + ", ";
+		userWords.setText(userWordString);
+		
+		packageGameStateAndPublish(userWordString);
 		
 		clearSelectedLetterTextView();
 		
@@ -577,6 +638,10 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		else{
 			return letter;
 		}
+	}
+	
+	private void setOpponentWords(){
+		opponentWords.setText(PersGlobals.getGlobals().getOpponentPriorWordString());
 	}
 	
 

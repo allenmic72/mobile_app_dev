@@ -8,7 +8,10 @@ import android.graphics.Rect;
 import com.google.gson.annotations.*;
 
 public class PersBoggleGameState{
-	//gameStatus: SYNCH, ASYNCH, OVER
+	
+	/**
+	 * gameStatus: SYNC, ASYNC, OVER
+	 */
 	@Expose
 	public String gameStatus; 
 	
@@ -29,6 +32,12 @@ public class PersBoggleGameState{
 	
 	@Expose
 	public ArrayList<String> priorChosenWords;
+	
+	@Expose 
+	public String[][] boardLetters;
+	
+	@Expose
+	public String foundWords = "";
 	
 	
 }

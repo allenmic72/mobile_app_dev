@@ -12,6 +12,7 @@ import edu.neu.madcourse.michaelallen.R;
 import edu.neu.mobileclass.apis.KeyValueAPI;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -45,7 +46,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
     	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.pers_boggle_challenge_textview, otherUsers);
     	
     	
-    	
+    	final Context c = this;
     	listv.setOnItemClickListener(new OnItemClickListener() {
 
 			public void onItemClick(AdapterView<?> arg0, View view, int position,
@@ -62,7 +63,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							
 							
 							if (phoneNum != null){
-								waitUntilUserAccepts = new waitUntilUserAcceptsChallenge();
+								waitUntilUserAccepts = new waitUntilUserAcceptsChallenge(c);
 								
 								Calendar c = Calendar.getInstance();
 								Gson gson = new Gson();
@@ -72,29 +73,17 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 								Log.d("challenge this num", "challenging " + phoneNum);
 								GCMServlet serv = new GCMServlet();
 						        Builder mesBuilder = new Message.Builder();
-						        mesBuilder.addData("opponent", opponent);
+						        ///NOTE: username and opponent reversed here. These names are from the opponent's perspective
+						        mesBuilder.addData("opponent", PersGlobals.getGlobals().getUsername());
+						        mesBuilder.addData("username", opponent);
 						        mesBuilder.addData("phoneNum", phoneNum);
 						        mesBuilder.addData("message", "What up bro");
 						        mesBuilder.addData("time", dateString);
 						        mesBuilder.addData("type", "challenge");
 						        serv.sendMessage(mesBuilder.build(), phoneNum);
 						        
-						        
 						        waitUntilUserAccepts.execute(opponent);
-						        goForFiveMinutes = new CountDownTimer(300000, 300000){
-
-									@Override
-									public void onFinish() {
-										waitUntilUserAccepts.cancel(true);
-										
-									}
-
-									@Override
-									public void onTick(long millisUntilFinished) {
-										
-									}
-						        	
-						        }.start();
+						        
 							}
 							
 						}
@@ -138,18 +127,47 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 }
 
 class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
+	final Context c;
+	waitUntilUserAcceptsChallenge(final Context c){
+		this.c = c;
+	}
 	
 	@Override
 	protected Void doInBackground(String... params) {
+		long startTime = Calendar.getInstance().getTimeInMillis();
+		long currentTime;
 		String opponent = params[0];
+		
+		//clear the key in case a past game state is still there
+		if (KeyValueAPI.isServerAvailable()){
+			KeyValueAPI.clearKey("allenmic", "allenmic", opponent + PersGlobals.getGlobals().getUsername());
+			KeyValueAPI.clearKey("allenmic", "allenmic", PersGlobals.getGlobals().getUsername() + opponent);
+		}
+		
+		
 		while(!this.isCancelled()){
-
+			Log.d("Waituntiluseraccepts", "still waiting, checking " + opponent + PersGlobals.getGlobals().getUsername());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				
+			}
+			currentTime = Calendar.getInstance().getTimeInMillis();
+			if (currentTime - startTime > 300000){
+				this.cancel(true);
+			}
 			if (KeyValueAPI.isServerAvailable()){
 				Gson gson = new Gson();
 				String gameState = KeyValueAPI.get("allenmic", "allenmic", opponent + PersGlobals.getGlobals().getUsername());
 				if (gameState != null && gameState != ""){
-					gson.fromJson(gameState, PersBoggleGameState.class);
-					
+					PersBoggleGameState state = gson.fromJson(gameState, PersBoggleGameState.class);
+					Log.d("Wait until user accepts", "got game state status : " + state.gameStatus);
+					Intent startGame = new Intent(c, PersBoggleGame.class);
+					startGame.putExtra("state", gameState);
+					startGame.putExtra("leader", false);
+					startGame.putExtra("opponent", opponent);
+					c.startActivity(startGame);
+					this.cancel(true);
 				}
 			}
 		}

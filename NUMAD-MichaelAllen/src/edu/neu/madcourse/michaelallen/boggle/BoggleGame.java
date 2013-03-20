@@ -306,7 +306,7 @@ public class BoggleGame extends Activity implements OnClickListener{
 			String suffix = selectedWord.substring(3);
 			
 			InputStreamReader reader = new InputStreamReader(stream);
-			BufferedReader buf = new BufferedReader(reader);
+			BufferedReader buf = new BufferedReader(reader, 8192);
 			
 			String nextLine = buf.readLine();
 			while (nextLine != null){

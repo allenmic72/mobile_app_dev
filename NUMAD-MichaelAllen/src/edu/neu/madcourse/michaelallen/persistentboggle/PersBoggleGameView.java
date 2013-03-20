@@ -7,14 +7,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Paint.Style;
 import android.graphics.Path.Direction;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.media.SoundPool;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -41,13 +45,30 @@ public class PersBoggleGameView extends View {
 	private ArrayList<Rect> goodOtherUserBlocks;
 	private ArrayList<Rect> badOtherUserBlocks;
 	
+	private ArrayList<Rect> userLineSelection;
+	
 	private final PersBoggleGame game;
+	
 	
 	private static final String TAG = "PersBoggleGameView";
 	
 	private Rect otherUserRect = new Rect();
 	
+	private Rect rectToDrawLine;
+	
 	private int opponentVersion;
+	
+	Bitmap blockBitmap;
+	Bitmap goodWordBitmap;
+	Bitmap badWordBitmap;
+	Bitmap selectionBitmap;
+	Paint boardPaint;
+	Paint selected;
+	Paint goodWordSelection;
+	Paint goodOtherUserSelection;
+	Paint badOtherUserSelection;
+	Paint letterColor;
+	Rect blockRect;
 	
 	public PersBoggleGameView(Context context, AttributeSet attrs) {
 		super(context);
@@ -59,12 +80,15 @@ public class PersBoggleGameView extends View {
 		badSelectionBlocks = new ArrayList<Rect>();
 		goodOtherUserBlocks = new ArrayList<Rect>();
 		badOtherUserBlocks = new ArrayList<Rect>();
+		userLineSelection = new ArrayList<Rect>();
+		rectToDrawLine  = new Rect();
 		
+		initiateCanvasObjects();
 		
 		opponentVersion = 0;
-		this.setBackgroundResource(R.drawable.bogglebck);
+		//this.setBackgroundResource(R.drawable.bogglebck);
 		
-		startPollingServer(PersGlobals.getGlobals().getUsername() + PersGlobals.getGlobals().getUsername(), this.game);
+		startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this.game);
 	}
 	
 	@Override
@@ -78,58 +102,95 @@ public class PersBoggleGameView extends View {
 		viewHeight = h;
 		viewWidth = w;
 	    blockWidth = (int) (viewWidth / PersGlobals.getGlobals().getNumberOfBlocks());
+		letterColor.setTextSize(blockWidth * 0.75f);
 	    super.onSizeChanged(w, h, oldw, oldh);
 	   }	
 	
 	@Override
 	protected void onDraw(Canvas canvas){
+		/*
 		int brownTranslucent = getResources().getColor(R.color.pers_boggle_board_line);
-		
-		Paint boardPaint;
-		boardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		boardPaint.setColor(brownTranslucent);
 		boardPaint.setStyle(Paint.Style.STROKE);
-		boardPaint.setStrokeWidth(8);
+		boardPaint.setStrokeWidth(8);*/
 		
-		for (int vert = 0; vert < PersGlobals.getGlobals().getNumberOfBlocks() + 1; vert++){
-			float lineXVal = vert * blockWidth;
-			canvas.drawLine(lineXVal, 0, lineXVal, viewHeight, boardPaint);
+		for (int vert = 0; vert < PersGlobals.getGlobals().getNumberOfBlocks(); vert++){
+			for (int horiz = 0; horiz < PersGlobals.getGlobals().getNumberOfBlocks(); horiz++){
+			//float lineXVal = vert * blockWidth;
+			//canvas.drawLine(lineXVal, 0, lineXVal, viewHeight, boardPaint);
+				blockRect.left = horiz * blockWidth;
+				blockRect.top = vert * blockWidth;
+				blockRect.right = horiz * blockWidth + blockWidth;
+				blockRect.bottom = vert * blockWidth + blockWidth;
+				
+				
+				canvas.drawBitmap(blockBitmap, null, blockRect, null);
+			}	
 		}
 		
-		for (int horiz = 0; horiz < PersGlobals.getGlobals().getNumberOfBlocks() + 1; horiz++){
+		/*
 			float lineYVal = horiz * blockWidth;
 			canvas.drawLine(0, lineYVal, viewWidth, lineYVal, boardPaint);
-		}		
+			*/
 		
-		Paint selected = new Paint();
 	    selected.setColor(getResources().getColor(R.color.puzzle_selected));
 	    
 		for (int block = 0; block < selectedBlocks.size(); block++){
-			if (selectedBlocks.get(block) != null){
-				
-			    canvas.drawRect(selectedBlocks.get(block), selected);
+			if (selectedBlocks.get(block) != null){				
+				canvas.drawBitmap(selectionBitmap, 
+						null, selectedBlocks.get(block), null);
+			    //canvas.drawRect(selectedBlocks.get(block), selected);
 			}
 		}
 		
-		Paint goodWordSelection = new Paint();
 		goodWordSelection.setColor(getResources().getColor(R.color.boggle_correctWord));
 		for (int block = 0; block < goodSelectionBlocks.size(); block++){
-			if (goodSelectionBlocks.get(block) != null){				
-			    canvas.drawRect(goodSelectionBlocks.get(block), goodWordSelection);
+			if (goodSelectionBlocks.get(block) != null){
+				canvas.drawBitmap(goodWordBitmap, 
+						null, goodSelectionBlocks.get(block), null);
+			    //canvas.drawRect(goodSelectionBlocks.get(block), goodWordSelection);
 			}
 		}
 		
-		Paint badWordSelection = new Paint();
-		badWordSelection.setColor(getResources().getColor(R.color.boggle_incorrectWord));
+		/*Paint badWordSelection = new Paint();
+		badWordSelection.setColor(getResources().getColor(R.color.boggle_incorrectWord));*/
 		for (int block = 0; block < badSelectionBlocks.size(); block++){
-			if (badSelectionBlocks.get(block) != null){	
-			    canvas.drawRect(badSelectionBlocks.get(block), badWordSelection);
+			if (badSelectionBlocks.get(block) != null){
+				canvas.drawBitmap(badWordBitmap, 
+						null, badSelectionBlocks.get(block), null);
+				
+				//canvas.drawRect(badSelectionBlocks.get(block), badWordSelection);
 			}
 		}
+		
+		/*Paint userSwipeLine = new Paint();
+		userSwipeLine.setColor(getResources().getColor(R.color.pers_boggle_user_drawLine));
+		userSwipeLine.setStyle(Paint.Style.STROKE);
+		userSwipeLine.setStrokeWidth(8);
+		for (int linePoint = 0; linePoint < userLineSelection.size(); linePoint++){
+			if (linePoint > 0){
+				if (userLineSelection.get(linePoint) != null && 
+						userLineSelection.get(linePoint - 1) != null){
+					Rect start = userLineSelection.get(linePoint);
+					Rect end = userLineSelection.get(linePoint - 1);
+					//Log.d(TAG, "drawling line at  " + point.left + point.top);
+					canvas.drawLine(start.left + 10, start.top + 10, end.left + 10, end.top + 10, userSwipeLine);
+				}
+			}
+			
+		}*/
+		/*
+		if(userLineSelection.size() > 1){
+			Rect start = userLineSelection.get(userLineSelection.size() - 2);
+			Rect end = userLineSelection.get(userLineSelection.size() - 1);
+			canvas.drawLine(start.left + 5, start.top + 5, end.left + 5, end.top + 5, userSwipeLine);
+		}*/
+		//canvas.drawRect(rectToDrawLine, userSwipeLine);
+		//userLineSelection.add(rectToDrawLine);
 		
 		
 		//Draw the other user's recent actions
-		Paint goodOtherUserSelection = new Paint();
+		
 		goodOtherUserSelection.setColor(getResources().getColor(R.color.pers_boggle_otherUserGoodWord));
 		for (int i = 0; i < goodOtherUserBlocks.size(); i++){
 			if (goodOtherUserBlocks.get(i) != null){
@@ -137,7 +198,7 @@ public class PersBoggleGameView extends View {
 			}
 		}
 		
-		Paint badOtherUserSelection = new Paint();
+		
 		badOtherUserSelection.setColor(getResources().getColor(R.color.pers_boggle_otherUserBadWord));
 		for (int i = 0; i < badOtherUserBlocks.size(); i++){
 			if (badOtherUserBlocks.get(i) != null){
@@ -145,19 +206,14 @@ public class PersBoggleGameView extends View {
 			}
 		}
 		
-		Paint foreground = new Paint(Paint.ANTI_ALIAS_FLAG);
-	      foreground.setColor(getResources().getColor(
-	            R.color.puzzle_foreground));
-	      foreground.setStyle(Style.FILL);
-	      foreground.setTextSize(blockWidth * 0.75f);
-	      foreground.setTextAlign(Paint.Align.CENTER);
 		
+	    
 		for (int i = 0; i < PersGlobals.getGlobals().getNumberOfBlocks(); i++){
 			for (int j = 0; j < PersGlobals.getGlobals().getNumberOfBlocks(); j++){
 				canvas.drawText(this.game.getBoardLetter(i, j),
 		                  i * blockWidth + blockWidth/2,
-		                  j * blockWidth +  7 * blockWidth / 10,
-		                  foreground);
+		                  j * blockWidth +  7.5f * blockWidth / 10,
+		                  letterColor);
 			}
 		}
 		
@@ -198,12 +254,17 @@ public class PersBoggleGameView extends View {
 				selectedLetters += touchedLetter;
 				this.game.addToSelectedLetterTextView(touchedLetter);
 				invalidate(block);
+				
+				//addPointToDrawUserLine(x, y);
 			}
 			break;
 		case MotionEvent.ACTION_UP:
 			checkSelectedLetters();
+			userLineSelection.clear();
 			return false;
 		case MotionEvent.ACTION_MOVE:
+			//addPointToDrawUserLine(x, y);
+			
 			float xBlock = x / blockWidth;
 			float yBlock = y / blockWidth;
 			if(moveEventWithinTolerableRange(xBlock, yBlock) 
@@ -217,6 +278,7 @@ public class PersBoggleGameView extends View {
 					this.game.addToSelectedLetterTextView(touchedLetter);
 					invalidate(block1);
 				}
+				
 			}
 			break;
 		}
@@ -224,7 +286,7 @@ public class PersBoggleGameView extends View {
 		return true;
 		
 	}
-	
+		
 	/**
 	 * 
 	 * @param x left x position of the block touched by user
@@ -267,6 +329,30 @@ public class PersBoggleGameView extends View {
 			}
 		}
 		return notTouched;
+	}
+	
+	private void addPointToDrawUserLine(float x, float y){
+		int xInt = (int) x;
+		int yInt = (int) y;
+		if (userLineSelection.size() > 0){
+			Rect lastTouch = userLineSelection.get(userLineSelection.size() - 1);
+			if (!(x > lastTouch.left && x < lastTouch.right 
+				&& y < lastTouch.bottom && y > lastTouch.top)){
+				addAndInvalidateRectPoint(xInt, yInt);
+			}
+		}
+		else{
+			addAndInvalidateRectPoint(xInt, yInt);
+		}
+	}
+	
+	private void addAndInvalidateRectPoint(int xInt, int yInt){
+		if (xInt + 10 < viewWidth && yInt + 10 < viewHeight){
+			rectToDrawLine = new Rect(xInt - 10, yInt - 10, xInt + 10, yInt + 10);
+			invalidate(rectToDrawLine);
+			userLineSelection.add(rectToDrawLine);
+			//Log.d(TAG, "added to userLineSelection: " + point);
+		}
 	}
 	
 	private void invalidateAndClearSelectedBlocks(){
@@ -341,8 +427,8 @@ public class PersBoggleGameView extends View {
 			selectionAnimationBlocks = badSelectionBlocks;
 		}
 		
-		selectionMatrix = convertRectsToMatrix(selectedBlocks, goodOrBad);
-		this.game.packageGameStateAndPublish(selectionMatrix);
+		//selectionMatrix = convertRectsToMatrix(selectedBlocks, goodOrBad);
+		//this.game.packageGameStateAndPublish(selectionMatrix);
 		
 		clearAllSelections(selectionAnimationBlocks);
 	}
@@ -496,10 +582,14 @@ public class PersBoggleGameView extends View {
 								//set opponent score
 								//check game state vars
 								
-								animateOpponentSelection(opponentGame.blockSelection);
+								//animateOpponentSelection(opponentGame.blockSelection);
 								
 								if (opponentGame.priorChosenWords != null && !opponentGame.priorChosenWords.isEmpty()){
 									PersGlobals.getGlobals().setOpponentPriorWords(opponentGame.priorChosenWords);
+								}
+								
+								if (opponentGame.foundWords != ""){
+									PersGlobals.getGlobals().setOpponentPriorWordString(opponentGame.foundWords);
 								}
 								
 								if (opponentGame.score > 0){
@@ -572,5 +662,24 @@ public class PersBoggleGameView extends View {
 			}
 			
 		}
+	}
+	
+	private void initiateCanvasObjects(){
+		blockBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.btn_blue_matte);
+		goodWordBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.btn_green_matte);
+		badWordBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.btn_red_matte);
+		selectionBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.btn_orange_matte);
+		boardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		selected = new Paint();
+		goodWordSelection = new Paint();
+		goodOtherUserSelection = new Paint();
+		badOtherUserSelection = new Paint();
+		letterColor = new Paint(Paint.ANTI_ALIAS_FLAG);
+		letterColor.setColor(getResources().getColor(
+		           R.color.pers_boggle_letter_text));
+		letterColor.setStyle(Style.FILL);
+		letterColor.setTextAlign(Paint.Align.CENTER);
+		letterColor.setTypeface(Typeface.DEFAULT_BOLD);
+		blockRect = new Rect();
 	}
 }

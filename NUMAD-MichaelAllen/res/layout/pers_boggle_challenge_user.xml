@@ -4,7 +4,8 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:background="@color/puzzle_dark"
-    android:gravity="center">
+    android:gravity="center"
+    android:typeface="serif">
 
    <ListView
        android:id="@+id/pers_boggle_challenge_view"
@@ -16,6 +17,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="@string/pers_boggle_challenge_exit"
+      android:background="@drawable/button_selector"
        />
 </LinearLayout>
 

@@ -69,6 +69,7 @@ public class PersBoggleGCMHandler{
 		Gson gson = new Gson();
 		String timeSent = getExtraString("time");
 		String opponent = getExtraString("opponent");
+		String username = getExtraString("username");
 		
 		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(100);
@@ -84,7 +85,8 @@ public class PersBoggleGCMHandler{
        			.setAutoCancel(true);
         
 
-        Intent notificationIntent = new Intent(context, PersBoggleNotificationClicked.class);
+        Intent notificationIntent = new Intent(context, PersBoggleAcceptChallenge.class);
+        notificationIntent.putExtra("username", username);
         notificationIntent.putExtra("opponent", opponent);
         notificationIntent.putExtra("time", timeSent);
         
