@@ -54,10 +54,10 @@ public class PersBoggleGCMHandler{
 		if (type.equals("challenge")){
 			setChallengedNotification();
 		}
-		else if (type == "declined"){
-			//TODO
+		else if (type.equals("asyncUpdate")){
+			setAsyncTurnNotification();
 		}
-		else if (type == "asyncUpdate"){
+		else if (type.equals("declined")){
 			//TODO
 		}
 		else {
@@ -72,7 +72,7 @@ public class PersBoggleGCMHandler{
 		String username = getExtraString("username");
 		
 		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(100);
+        v.vibrate(200);
         int icon = R.drawable.ic_launcher;
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -99,13 +99,59 @@ public class PersBoggleGCMHandler{
                     0,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 );
-        notification.setContentIntent(pendingIntent);
-        
-        Log.d("", "intent created");
-        
+        notification.setContentIntent(pendingIntent);        
         notificationManager.notify(opponent.hashCode(), notification.build());
         
-        Log.d("", "intent created 1111");
+	}
+	
+
+	private void setAsyncTurnNotification() {
+		Gson gson = new Gson();
+		String opponent = getExtraString("opponent");
+		String username = getExtraString("username");
+		String regId = getExtraString("regId");
+		String oppRegId = getExtraString("oppRegId");
+		String scoreJson = getExtraString("score");
+		String opponentScoreJson = getExtraString("opponentScore");
+		
+		int score = gson.fromJson(scoreJson, Integer.class);
+		int opponentScore = gson.fromJson(opponentScoreJson, Integer.class);
+		
+		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(200);
+        int icon = R.drawable.ic_launcher;
+        NotificationManager notificationManager = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
+        
+        NotificationCompat.Builder notification = 
+        		new NotificationCompat.Builder(context)
+       			.setSmallIcon(icon)
+       			.setContentTitle("Asynchronous Boggle")
+       			.setContentText("Play your turn against " + opponent + " !")
+       			.setAutoCancel(true);
+        
+
+        Intent notificationIntent = new Intent(context, PersBoggleGame.class);
+        notificationIntent.putExtra("username", username);
+        notificationIntent.putExtra("opponent", opponent);
+        notificationIntent.putExtra("regId", regId);
+        notificationIntent.putExtra("oppRegId", oppRegId);
+        notificationIntent.putExtra("score", score);
+        notificationIntent.putExtra("opponentScore", opponentScore);
+        notificationIntent.putExtra("status", "async");
+        
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(PersBoggleMain.class);
+        stackBuilder.addNextIntent(notificationIntent);
+        
+        PendingIntent pendingIntent =
+                stackBuilder.getPendingIntent(
+                    0,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        notification.setContentIntent(pendingIntent);
+        notificationManager.notify(opponent.hashCode(), notification.build());
+        
 	}
 	
 }

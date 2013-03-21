@@ -43,6 +43,8 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	boolean leader;
 	String status;
 	String username;
+	String regId; //regId of user, for async GCMs
+	String oppRegId; //regId of opponent
 	
 	private final String TAG = "PersBoggleGame";
 	int myVersion;
@@ -101,8 +103,24 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		opponentWords.setText(opponent + " found: ");
 		
 		Gson gson = new Gson();
+		
+		if (status.equals("async")){
+			PersGlobals.getGlobals().resetAllVariables();
+			regId = getIntent().getStringExtra("regId");
+			oppRegId = getIntent().getStringExtra("oppRegId");
+			int score = getIntent().getIntExtra("score", 0);
+			int opponentScore = getIntent().getIntExtra("opponentScore", 0);
+			PersGlobals.getGlobals().setScore(score);
+			PersGlobals.getGlobals().setOpponentScore(opponentScore);
+			setCurrentScore(score);
+			setOpponentScore(opponentScore);
+			populateBoardWithLetters();
+			opponentWords.setEnabled(false);
+			opponentWords.setVisibility(View.INVISIBLE);
+			
+		}
 		//TODO change this?
-		if (resumed == 1){
+		else if (resumed == 1){
 			putSharedPreferences();
 			if (PersGlobals.getGlobals().getIsPaused()){
 				pausedResume.setText(R.string.boggle_resume_text);
@@ -115,7 +133,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	    	int sec = (int) (PersGlobals.getGlobals().getTimerVal() % 60);
 			timerTextView.setText("" + min + ":" + sec);
 		}
-		else if (leader){
+		else if (leader){ //sync
 			Log.d(TAG, "starting game as leader");
 			PersGlobals.getGlobals().resetAllVariables();
 			populateBoardWithLetters();
@@ -128,7 +146,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			PersBogglePutKeyValToServer publishGameToOpponent = new PersBogglePutKeyValToServer();
 			publishGameToOpponent.execute(PersGlobals.getGlobals().getUsername() + opponent, json);
 		}
-		else{
+		else{ //sync not leader
 			String state = getIntent().getStringExtra("state");
 			PersBoggleGameState gameState = gson.fromJson(state, PersBoggleGameState.class);
 			PersGlobals.getGlobals().resetAllVariables();
@@ -363,6 +381,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	private void setOpponentScore(int n){
 		TextView opponentScore = (TextView) findViewById(R.id.pers_boggle_game_opponentscore);
 		opponentScore.setText("" + n);
+		PersGlobals.getGlobals().setOpponentScore(n);
 	}
 	
 	private void putSharedPreferences(){
@@ -501,7 +520,9 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		userWordString += word + ", ";
 		userWords.setText(userWordString);
 		
-		packageGameStateAndPublish(userWordString);
+		if (status.equals("sync")){
+			packageGameStateAndPublish(userWordString);
+		}
 		
 		clearSelectedLetterTextView();
 		
@@ -549,6 +570,10 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	
 	private void openScoreScreen(){
 		Intent scoreScreen = new Intent(this, PersBoggleScoreScreen.class);
+		if (status.equals("async")){
+			scoreScreen.putExtra("regId", regId);
+			scoreScreen.putExtra("oppRegId", oppRegId);
+		}
 		startActivity(scoreScreen);
 		finish();
 	}

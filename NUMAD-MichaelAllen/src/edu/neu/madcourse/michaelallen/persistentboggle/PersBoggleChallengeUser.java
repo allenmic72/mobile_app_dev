@@ -20,6 +20,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,7 +55,6 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
     	final Context context = this;
 
     	final RadioGroup mode = (RadioGroup) findViewById(R.id.pers_boggle_challenge_radiogroup);
-    	
     	listv.setOnItemClickListener(new OnItemClickListener() {
     		
 			public void onItemClick(AdapterView<?> arg0, View view, int position,
@@ -65,34 +66,35 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 				final int idClicked = (int) id;
 				final String opponent = otherUsers.get(idClicked);
 				
-				AsyncTask<Void, Void, String> sendChallengeOrStartAsyncGame = new AsyncTask<Void, Void, String>(){
+				AsyncTask<Void, Void, String[]> sendChallengeOrStartAsyncGame = new AsyncTask<Void, Void, String[]>(){
 
-					protected String doInBackground(Void... params) {
+					protected String[] doInBackground(Void... params) {
 						if (KeyValueAPI.isServerAvailable()){
 							int modeChecked = mode.getCheckedRadioButtonId();
+							Log.d("Challenge", "button checked: " + modeChecked);
+							String oppPhoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);		
 							
-							String phoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);		
-							
-							if (modeChecked == R.id.pers_boggle_accept_sync_radio){
+							if (modeChecked == R.id.pers_boggle_sync_radio){
 								
 								
-								if (phoneNum != null){
+								if (oppPhoneNum != null){
 									Calendar c = Calendar.getInstance();
 									Gson gson = new Gson();
 									Date date = c.getTime();
 									String dateString = gson.toJson(date);
 									
-									Log.d("challenge this num", "challenging " + phoneNum);
+									
+									Log.d("challenge this num", "challenging " + oppPhoneNum);
 									GCMServlet serv = new GCMServlet();
 							        Builder mesBuilder = new Message.Builder();
 							        ///NOTE: username and opponent reversed here. These names are from the opponent's perspective
 							        mesBuilder.addData("opponent", PersGlobals.getGlobals().getUsername());
 							        mesBuilder.addData("username", opponent);
-							        mesBuilder.addData("phoneNum", phoneNum);
+							        mesBuilder.addData("phoneNum", oppPhoneNum);
 							        mesBuilder.addData("message", "What up bro");
 							        mesBuilder.addData("time", dateString);
 							        mesBuilder.addData("type", "challenge");
-							        serv.sendMessage(mesBuilder.build(), phoneNum);
+							        serv.sendMessage(mesBuilder.build(), oppPhoneNum);
 							       
 							        waitUntilUserAccepts = new waitUntilUserAcceptsChallenge(context);
 							        waitUntilUserAccepts.execute(opponent);
@@ -101,16 +103,25 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							
 							}
 							else{
-								String regId = KeyValueAPI.get("allenmic", "allenmic", phoneNum + "regId");
-								return regId;
+								TelephonyManager mTelephonyMgr = (TelephonyManager)
+								        getSystemService(Context.TELEPHONY_SERVICE);
+
+								String myPhoneNum = mTelephonyMgr.getLine1Number();
+								    
+								String regId = KeyValueAPI.get("allenmic", "allenmic", oppPhoneNum + "regId");
+								String oppRegId = KeyValueAPI.get("allenmic", "allenmic", myPhoneNum + "regId");
+								String[] result = new String[2];
+								result[0] = regId;
+								result[1] = oppRegId;
+								return result;
 							}
 							
 						}
 						return null;
 					}
 					
-					 protected void onPostExecute(String regId) {
-						 if (regId == null){
+					 protected void onPostExecute(String[] regIds) {
+						 if (regIds == null){
 							 if (context != null){
 
 							        CharSequence toastText = "Sent request to " + opponent
@@ -119,12 +130,12 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 						      }
 						 }
 						 else{
-							 showAsyncGameDialog(regId);
+							 showAsyncGameDialog(regIds);
 						 }
 						 
 				     }
 					 
-					 private void showAsyncGameDialog(final String regId){
+					 private void showAsyncGameDialog(final String[] regIds){
 							AlertDialog.Builder startingAsyncDialog = new AlertDialog.Builder(context);
 							startingAsyncDialog.create();
 							startingAsyncDialog.setMessage("Starting async game against " + opponent + 
@@ -133,7 +144,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
-									startAsyncGame(regId);
+									startAsyncGame(regIds);
 								}
 								
 							});
@@ -141,7 +152,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
-									finish();
+									dialog.cancel();
 								}
 								
 							});
@@ -150,14 +161,15 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							
 						}
 						
-						private void startAsyncGame(String regId){
+						private void startAsyncGame(String[] regIds){
 							String username = PersGlobals.getGlobals().getUsername();
 							Intent i = new Intent(context, PersBoggleGame.class);
 							i.putExtra("opponent", opponent);
 							i.putExtra("username", username);
 							i.putExtra("leader", true);
 							i.putExtra("status", "async");
-							i.putExtra("regId", regId);
+							i.putExtra("regId", regIds[0]);
+							i.putExtra("oppRegId", regIds[1]);
 							startActivity(i);
 							finish();
 						}
@@ -239,6 +251,7 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 					startGame.putExtra("state", gameState);
 					startGame.putExtra("leader", false);
 					startGame.putExtra("opponent", opponent);
+					startGame.putExtra("status", state.gameStatus);
 					c.startActivity(startGame);
 					this.cancel(true);
 				}

@@ -94,7 +94,8 @@
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleRules"
-            android:label="@string/boggle_rules_label">
+            android:label="@string/boggle_rules_label"
+            >
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleAcknowledgements"
@@ -102,15 +103,21 @@
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleViewHighScores"
-            android:label="@string/boggle_high_scores_label">
+            android:label="@string/boggle_high_scores_label"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait">
         </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleChallengeUser"
-            android:label="@string/pers_boggle_challenge_user_label">
-        </activity>
+            android:label="@string/pers_boggle_challenge_user_label"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait">
+        </activity>s
         <activity
             android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleAcceptChallenge"
-            android:label="@string/pers_boggle_accept_challenge_label">
+            android:label="@string/pers_boggle_accept_challenge_label"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait">
         </activity>
         <activity android:name="edu.neu.madcourse.michaelallen.sudoku.Sudoku"
               android:label="@string/sudoku_title">

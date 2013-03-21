@@ -2,6 +2,9 @@ package edu.neu.madcourse.michaelallen.persistentboggle;
 
 import java.util.ArrayList;
 import edu.neu.mobileclass.apis.KeyValueAPI;
+
+import com.google.android.gcm.server.Message;
+import com.google.android.gcm.server.Message.Builder;
 import com.google.gson.Gson;
 
 import edu.neu.madcourse.michaelallen.R;
@@ -20,6 +23,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 	
@@ -43,13 +47,14 @@ public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 		}
 		wordsFound.setText("You found the following words: " + wordsFoundText);
 		
-		
 		saveScoreIfHigh(PersGlobals.getGlobals().getScore());
 		
 		View mainScreen = findViewById(R.id.pers_boggle_main_screen_button);
 		mainScreen.setOnClickListener(this);
 		
-		
+		if (PersGlobals.getGlobals().getStatus().equals("async")){
+			sendGCMToASyncOpponent();
+		}
 	}
 
 	@Override
@@ -95,5 +100,51 @@ public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 		});
 		IdDialogBuilder.show();
 	}
+	
+	private void sendGCMToASyncOpponent() {
+		Gson gson = new Gson();
+		String regId = getIntent().getStringExtra("regId");
+		String oppRegId = getIntent().getStringExtra("oppRegId");
+		int score = PersGlobals.getGlobals().getScore();
+		int opponentScore = PersGlobals.getGlobals().getOpponentScore();
+		String scoreJson = gson.toJson(score);
+		String opponentScoreJson = gson.toJson(opponentScore);
+		
+		GCMServlet serv = new GCMServlet();
+        Builder mesBuilder = new Message.Builder();
+        mesBuilder.addData("regId", oppRegId);
+        mesBuilder.addData("oppRegId", regId);
+        mesBuilder.addData("opponent", PersGlobals.getGlobals().getUsername());
+        mesBuilder.addData("username", PersGlobals.getGlobals().getOpponent());
+        mesBuilder.addData("opponentScore", scoreJson);
+        mesBuilder.addData("score", opponentScoreJson);
+        mesBuilder.addData("type", "asyncUpdate");
+        
+        CharSequence toastText = "";
+        if (isNetworkAvailable()){
+    		toastText = "Notifying " + PersGlobals.getGlobals().getOpponent()
+    				+ " that it is their turn...";
+        }
+        else{
+        	toastText = "Can't access network. Will attempt to notify "
+        			+ PersGlobals.getGlobals().getOpponent() + " later.";
+        }
+        Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+        
+        serv.sendAsyncMessage(mesBuilder.build(), oppRegId);
+	}
+	
+	private boolean isNetworkAvailable(){
+		ConnectivityManager connectivityManager 
+        	= (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+		if (activeNetworkInfo != null){
+			return true;
+		}
+		else{
+		  	return false;
+		}
+	}
+	
 	
 }

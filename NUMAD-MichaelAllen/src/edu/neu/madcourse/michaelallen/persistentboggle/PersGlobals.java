@@ -19,6 +19,7 @@ public class PersGlobals{
 	private String[][] boardLetters = new String[numberOfBlocks][numberOfBlocks];
 	
 	private int score = 0;
+	private int opponentScore = 0;
 	
 	private ArrayList<String> userPriorChosenWords = new ArrayList<String>();
 	private ArrayList<String> opponentPriorChosenWords = new ArrayList<String>();
@@ -157,6 +158,14 @@ public class PersGlobals{
 	
 	public void setScore(int n){
 		score = n;
+	}
+	
+	public int getOpponentScore(){
+		return opponentScore;
+	}
+	
+	public void setOpponentScore(int n){
+		opponentScore = n;
 	}
 	
 	public ArrayList<String> getUserPriorWords(){

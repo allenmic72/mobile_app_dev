@@ -88,7 +88,9 @@ public class PersBoggleGameView extends View {
 		opponentVersion = 0;
 		//this.setBackgroundResource(R.drawable.bogglebck);
 		
-		startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this.game);
+		if (PersGlobals.getGlobals().getStatus().equals("sync")){
+			startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this.game);
+		}
 	}
 	
 	@Override
