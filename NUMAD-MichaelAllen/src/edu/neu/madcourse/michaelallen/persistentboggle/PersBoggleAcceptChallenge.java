@@ -13,6 +13,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 public class PersBoggleAcceptChallenge extends Activity implements OnClickListener{
 	String opponent;
@@ -23,16 +26,11 @@ public class PersBoggleAcceptChallenge extends Activity implements OnClickListen
     	
     	setContentView(R.layout.pers_boggle_accept_challenge);
     	
-    	View acceptSync = findViewById(R.id.pers_boggle_accept_sync);
-    	acceptSync.setOnClickListener(this);
-    	
-    	View acceptAsync = findViewById(R.id.pers_boggle_accept_async);
-    	acceptAsync.setOnClickListener(this);
+    	View acceptButton = findViewById(R.id.pers_boggle_accept_challenge);
+    	acceptButton.setOnClickListener(this);
     	
     	View decline = findViewById(R.id.pers_boggle_decline);
     	decline.setOnClickListener(this);
-    	
-    	
     	
     	Gson gson = new Gson();
     	Date timeSent = gson.fromJson(getIntent().getStringExtra("time"), Date.class);
@@ -40,8 +38,9 @@ public class PersBoggleAcceptChallenge extends Activity implements OnClickListen
     	opponent = getIntent().getStringExtra("opponent");
     	username = getIntent().getStringExtra("username");
     	
-    	if (withinLastFiveMinutes(timeSent)){
-    		acceptSync.setVisibility(View.VISIBLE);
+    	if (!withinLastFiveMinutes(timeSent)){
+    		RadioButton syncRadio = (RadioButton) findViewById(R.id.pers_boggle_accept_sync_radio);
+    		syncRadio.setEnabled(false);
     	}
     	
 	}
@@ -52,31 +51,49 @@ public class PersBoggleAcceptChallenge extends Activity implements OnClickListen
 		long timePassed = current.getTime() - timeSent.getTime();
 		return timePassed < 300000; //300000 millis = 5 minutes
 	}
+	
+	private Intent checkRadioAndCreateProperIntent(){
+		Intent i = new Intent(this, PersBoggleGame.class);
+		i.putExtra("opponent", opponent);
+		i.putExtra("username", username);
+		i.putExtra("leader", true);
+		
+		RadioGroup r = (RadioGroup) findViewById(R.id.pers_boggle_accept_radiogroup);
+		int id = r.getCheckedRadioButtonId();
+		
+		if (id == R.id.pers_boggle_accept_sync_radio){
+			i.putExtra("status", "sync");
+		}
+		else if(id == R.id.pers_boggle_accept_async_radio){
+			i.putExtra("status", "async");
+		}
+		else{
+			return null;
+		}
+		return i;
+		
+		
+	}
 
 
 	@Override
 	public void onClick(View v) {
 		switch(v.getId()){
-		case R.id.pers_boggle_accept_sync:
-			Intent sync = new Intent(this, PersBoggleGame.class);
-			sync.putExtra("status", "sync");
-			sync.putExtra("leader", true);
-			sync.putExtra("opponent", opponent);
-			sync.putExtra("username", username);
-			startActivity(sync);
-			finish();
-			break;
-		case R.id.pers_boggle_accept_async:
-			Intent async = new Intent(this, PersBoggleGame.class);
-			async.putExtra("status", "async");
-			async.putExtra("leader", true);
-			async.putExtra("opponent", opponent);
-			async.putExtra("username", username);
-			startActivity(async);
-			finish();
+		case R.id.pers_boggle_accept_challenge:
+			Intent i = checkRadioAndCreateProperIntent();
+			if (i != null){
+				Log.d("Acceptchallenge", i.getExtras().getString("status"));
+				startActivity(i);
+				finish();
+			}
+			else{
+				CharSequence toastText = "Please select a game mode";
+		        Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+			}
 			break;
 		case R.id.pers_boggle_decline:
-			//TODO decline chalenge
+			//TODO
+			finish();
 			break;
 		}
 	}

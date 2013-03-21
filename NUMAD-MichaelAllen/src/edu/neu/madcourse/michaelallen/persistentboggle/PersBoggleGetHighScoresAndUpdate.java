@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import edu.neu.madcourse.michaelallen.boggle.Globals;
@@ -47,6 +48,7 @@ public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, S
 		else{
 			Gson gson = new Gson();
 			
+			try{
 			Type hsType = new TypeToken<ArrayList<PersBoggleHighScore>>(){}.getType();
 			ArrayList<PersBoggleHighScore> oldHighScore = new ArrayList<PersBoggleHighScore>();
 			oldHighScore = gson.fromJson(hsList, hsType);
@@ -56,6 +58,10 @@ public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, S
 			KeyValueAPI.put(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
 					"pers_highscores", jjson);
 			PersGlobals.getGlobals().setHighScoreList(newhsList);
+			}
+			catch (JsonSyntaxException e){
+				
+			}
 		}
 		
 

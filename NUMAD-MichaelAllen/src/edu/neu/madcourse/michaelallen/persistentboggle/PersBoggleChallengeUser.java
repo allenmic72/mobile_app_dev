@@ -11,7 +11,9 @@ import com.google.gson.Gson;
 import edu.neu.madcourse.michaelallen.R;
 import edu.neu.mobileclass.apis.KeyValueAPI;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -25,7 +27,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class PersBoggleChallengeUser extends Activity implements OnClickListener{
 	
@@ -46,52 +50,121 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
     	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.pers_boggle_challenge_textview, otherUsers);
     	
     	
-    	final Context c = this;
-    	listv.setOnItemClickListener(new OnItemClickListener() {
+    	final Context context = this;
 
+    	final RadioGroup mode = (RadioGroup) findViewById(R.id.pers_boggle_challenge_radiogroup);
+    	
+    	listv.setOnItemClickListener(new OnItemClickListener() {
+    		
 			public void onItemClick(AdapterView<?> arg0, View view, int position,
 					long id) {
-				final int idClicked = (int) id;
 				
-				AsyncTask<Void, Void, Void> lookupPhone = new AsyncTask<Void, Void, Void>(){
+				CharSequence toastText = "Please wait a moment...";
+		        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show();
+		        
+				final int idClicked = (int) id;
+				final String opponent = otherUsers.get(idClicked);
+				
+				AsyncTask<Void, Void, String> sendChallengeOrStartAsyncGame = new AsyncTask<Void, Void, String>(){
 
-					protected Void doInBackground(Void... params) {
+					protected String doInBackground(Void... params) {
 						if (KeyValueAPI.isServerAvailable()){
-							String opponent = otherUsers.get(idClicked);
-							String phoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);
+							int modeChecked = mode.getCheckedRadioButtonId();
 							
+							String phoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);		
 							
-							
-							if (phoneNum != null){
-								waitUntilUserAccepts = new waitUntilUserAcceptsChallenge(c);
+							if (modeChecked == R.id.pers_boggle_accept_sync_radio){
 								
-								Calendar c = Calendar.getInstance();
-								Gson gson = new Gson();
-								Date date = c.getTime();
-								String dateString = gson.toJson(date);
 								
-								Log.d("challenge this num", "challenging " + phoneNum);
-								GCMServlet serv = new GCMServlet();
-						        Builder mesBuilder = new Message.Builder();
-						        ///NOTE: username and opponent reversed here. These names are from the opponent's perspective
-						        mesBuilder.addData("opponent", PersGlobals.getGlobals().getUsername());
-						        mesBuilder.addData("username", opponent);
-						        mesBuilder.addData("phoneNum", phoneNum);
-						        mesBuilder.addData("message", "What up bro");
-						        mesBuilder.addData("time", dateString);
-						        mesBuilder.addData("type", "challenge");
-						        serv.sendMessage(mesBuilder.build(), phoneNum);
-						        
-						        waitUntilUserAccepts.execute(opponent);
-						        
+								if (phoneNum != null){
+									Calendar c = Calendar.getInstance();
+									Gson gson = new Gson();
+									Date date = c.getTime();
+									String dateString = gson.toJson(date);
+									
+									Log.d("challenge this num", "challenging " + phoneNum);
+									GCMServlet serv = new GCMServlet();
+							        Builder mesBuilder = new Message.Builder();
+							        ///NOTE: username and opponent reversed here. These names are from the opponent's perspective
+							        mesBuilder.addData("opponent", PersGlobals.getGlobals().getUsername());
+							        mesBuilder.addData("username", opponent);
+							        mesBuilder.addData("phoneNum", phoneNum);
+							        mesBuilder.addData("message", "What up bro");
+							        mesBuilder.addData("time", dateString);
+							        mesBuilder.addData("type", "challenge");
+							        serv.sendMessage(mesBuilder.build(), phoneNum);
+							       
+							        waitUntilUserAccepts = new waitUntilUserAcceptsChallenge(context);
+							        waitUntilUserAccepts.execute(opponent);
+							        return null;
+								}
+							
+							}
+							else{
+								String regId = KeyValueAPI.get("allenmic", "allenmic", phoneNum + "regId");
+								return regId;
 							}
 							
 						}
 						return null;
 					}
+					
+					 protected void onPostExecute(String regId) {
+						 if (regId == null){
+							 if (context != null){
+
+							        CharSequence toastText = "Sent request to " + opponent
+							        		+ ". If they accept, the game will start.";
+							        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+						      }
+						 }
+						 else{
+							 showAsyncGameDialog(regId);
+						 }
+						 
+				     }
+					 
+					 private void showAsyncGameDialog(final String regId){
+							AlertDialog.Builder startingAsyncDialog = new AlertDialog.Builder(context);
+							startingAsyncDialog.create();
+							startingAsyncDialog.setMessage("Starting async game against " + opponent + 
+									". You'll play your turn first. Ready?");
+							startingAsyncDialog.setPositiveButton("I'm Ready", new DialogInterface.OnClickListener(){
+							
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									startAsyncGame(regId);
+								}
+								
+							});
+							startingAsyncDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+							
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									finish();
+								}
+								
+							});
+							startingAsyncDialog.setIcon(R.drawable.ic_launcher);
+							startingAsyncDialog.show();
+							
+						}
+						
+						private void startAsyncGame(String regId){
+							String username = PersGlobals.getGlobals().getUsername();
+							Intent i = new Intent(context, PersBoggleGame.class);
+							i.putExtra("opponent", opponent);
+							i.putExtra("username", username);
+							i.putExtra("leader", true);
+							i.putExtra("status", "async");
+							i.putExtra("regId", regId);
+							startActivity(i);
+							finish();
+						}
+					 
 
 				};
-				lookupPhone.execute();
+				sendChallengeOrStartAsyncGame.execute();
 				
 				
 			}

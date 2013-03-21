@@ -48,12 +48,13 @@
 	<string name="ok_test">OK</string>
 	
 	<string name="pers_boggle_main_label">Persistent Boggle</string>
-	<string name="pers_boggle_challenge_exit">Cancel</string>
+	<string name="pers_boggle_challenge_back">Back</string>
 	<string name="pers_boggle_challenge_user_label">Challenge Someone!</string>
-	<string name="pers_boggle_accept_sync">Play Synchronized</string>
-	<string name="pers_boggle_accept_async">Play Asynchronized</string>
+	<string name="pers_boggle_accept_button_text">Start Game</string>
 	<string name="pers_boggle_decline">Decline Challenge</string>
     <string name="pers_boggle_accept_challenge_label">Accept the Challenge?</string>
+    <string name="pers_boggle_radio_sync">Synchronous Mode</string>
+    <string name="pers_boggle_radio_async">Asynchronous Mode</string>
     
    <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>

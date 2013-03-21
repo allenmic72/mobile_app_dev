@@ -6,26 +6,38 @@
     android:gravity="center"
     android:background="@drawable/brown_gradient">
     
-    <Button
-        android:id="@+id/pers_boggle_accept_sync"
-	    android:layout_width="200dp"
-	    android:layout_height="wrap_content"
-	    android:text="@string/pers_boggle_accept_sync"
-	    android:visibility="invisible"
-	    android:background="@drawable/button_selector"
-        />
+    <RadioGroup 
+       android:id="@+id/pers_boggle_accept_radiogroup"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content">
+       
+       <RadioButton
+           android:id="@+id/pers_boggle_accept_sync_radio"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="@string/pers_boggle_radio_sync" 
+           />
+       
+       <RadioButton
+           android:id="@+id/pers_boggle_accept_async_radio"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="@string/pers_boggle_radio_async"           
+           android:checked="true"           
+           />
+   </RadioGroup>
     
     <Button
-        android:id="@+id/pers_boggle_accept_async"
-	    android:layout_width="200dp"
+        android:id="@+id/pers_boggle_accept_challenge"
+	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
-	    android:text="@string/pers_boggle_accept_async"
+	    android:text="@string/pers_boggle_accept_button_text"
 	    android:background="@drawable/button_selector"
         />
     
     <Button 
         android:id="@+id/pers_boggle_decline"
-	    android:layout_width="200dp"
+	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:text="@string/pers_boggle_decline"
 	    android:background="@drawable/button_selector"

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="@color/puzzle_dark"
+    android:gravity="center"
+    android:typeface="serif">
+
+   <RadioGroup 
+       android:id="@+id/pers_boggle_challenge_radiogroup"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content">
+       
+       <RadioButton
+           android:id="@+id/pers_boggle_sync_radio"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="@string/pers_boggle_radio_sync"
+           />
+       
+       <RadioButton
+           android:id="@+id/pers_boggle_async_radio"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="@string/pers_boggle_radio_async" 
+           android:checked="true"
+           />
+   </RadioGroup>
+   
+   <ListView
+       android:id="@+id/pers_boggle_challenge_view"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content" />
+
+   <Button
+      android:id="@+id/pers_boggle_challenge_back"       
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/pers_boggle_challenge_back"
+      android:background="@drawable/button_selector"
+       />
+</LinearLayout>
+

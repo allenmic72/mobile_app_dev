@@ -49,4 +49,35 @@ public class GCMServlet {
 			sendMessageAsync.execute(message);
 		}
 	}
+	
+	/**
+	 * sends a message to the given GCM regid
+	 * Will retry many times using GCM's exponential backoff retry
+	 */
+	public void sendAsyncMessage(Message message, final String regId){
+		sendMessageAsync = new AsyncTask<Message, Void, Result>(){
+			
+			@Override
+			protected Result doInBackground(Message... params) {
+				Message mes = params[0];
+				Sender sender = new Sender(myApiKey);
+				if (mes != null){
+					try {
+						Result result = sender.send(mes, regId, 50);
+						Log.d("GCMServlet", "Sending message to " + regId);
+						return result;
+					} catch (IOException e) {
+						Log.e("GCMServlet", "IOException when sending message: " + e);
+					}
+				}
+				return null;
+			}
+			
+			 protected void onPostExecute(Result result) {
+		         Log.d("GCMServlet", "GCM send result:::: " + result);
+		     }
+			
+		};
+		sendMessageAsync.execute(message);
+	}
 }
