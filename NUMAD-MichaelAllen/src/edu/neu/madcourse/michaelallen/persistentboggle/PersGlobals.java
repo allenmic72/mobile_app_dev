@@ -278,10 +278,6 @@ public class PersGlobals{
 		return currentOpponent;
 	}
 	
-	public void setPollingTask(AsyncTask<String, Void, Void> task){
-		pollingServer = task;
-	}
-	
 	public void cancelPollingTask(){
 		if (pollingServer != null){
 			pollingServer.cancel(true);

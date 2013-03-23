@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import edu.neu.madcourse.michaelallen.R;
 import edu.neu.madcourse.michaelallen.boggle.Globals;
 import edu.neu.mobileclass.apis.KeyValueAPI;
@@ -51,6 +52,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	Handler handler;
 	TextView userWords;
 	TextView opponentWords;
+	int opponentVersion;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -59,6 +61,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
 			PersGlobals.getGlobals().setUsername(spref.getString(this, "username"));
 		}
+		opponentVersion = 0;
 		
 		opponent = getIntent().getStringExtra("opponent");
 		PersGlobals.getGlobals().setOpponent(opponent);
@@ -102,12 +105,13 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		userWords.setText(username + " found: ");
 		opponentWords.setText(opponent + " found: ");
 		
+		regId = getIntent().getStringExtra("regId");
+		oppRegId = getIntent().getStringExtra("oppRegId");
+		
 		Gson gson = new Gson();
 		
 		if (status.equals("async")){
 			PersGlobals.getGlobals().resetAllVariables();
-			regId = getIntent().getStringExtra("regId");
-			oppRegId = getIntent().getStringExtra("oppRegId");
 			int score = getIntent().getIntExtra("score", 0);
 			int opponentScore = getIntent().getIntExtra("opponentScore", 0);
 			PersGlobals.getGlobals().setScore(score);
@@ -145,6 +149,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			String json = gson.toJson(state);
 			PersBogglePutKeyValToServer publishGameToOpponent = new PersBogglePutKeyValToServer();
 			publishGameToOpponent.execute(PersGlobals.getGlobals().getUsername() + opponent, json);
+			startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this);
 		}
 		else{ //sync not leader
 			String state = getIntent().getStringExtra("state");
@@ -160,6 +165,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			PersGlobals.getGlobals().setTimerVal(gameState.timerVal);
 			Log.d(TAG, "Starting " + gameState.gameStatus + " game against " + opponent);
 			Log.d(TAG, "Game against " + opponent + " with board " + gameState.boardLetters);
+			startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this);
 		}
 		/*
 		int[][] test = new int[5][5];
@@ -174,14 +180,6 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		new PersBogglePutKeyValToServer().execute(opponent + PersGlobals.getGlobals().getUsername(), json);
 		*/
 		
-		handler = new Handler(){
-			@Override
-			public void handleMessage (Message msg){
-				int n = msg.what;
-				setOpponentScore(n);
-				setOpponentWords();
-			}
-		};
 		
 	}
 
@@ -224,8 +222,9 @@ public class PersBoggleGame extends Activity implements OnClickListener{
     @Override
     protected void onStop(){
     	super.onStop();
+    	packageGameStateAndPublish(null);
     	saveSharedPreferences();
-    	//TODO: switch to async?
+    	
     	PersGlobals.getGlobals().cancelPollingTask();
     }
     
@@ -291,15 +290,26 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	 * the user has selected a sequence of letters, so package the game state and publish to the server
 	 * the opponent will then update their game with the necessary information
 	 * and animate their board with the user's selection
+	 * @chosenWords: newly selected word. If NULL, means a transition to async game
 	 */
 	private void packageGameStateAndPublish(String chosenWords) {
-		ArrayList<Rect> selectedBlocks;
+	
 		PersBoggleGameState state = new PersBoggleGameState();
 		
 		state.score = PersGlobals.getGlobals().getScore();
 		
-		state.priorChosenWords = PersGlobals.getGlobals().getUserPriorWords();
+		if (chosenWords != null){
+			state.priorChosenWords = PersGlobals.getGlobals().getUserPriorWords();
+			state.gameStatus = "sync";
+			Log.d(TAG, "putting sync game to server");
+		}
+		else{
+			state.gameStatus = "async";
+			Log.d(TAG, "putting game with async status to server");
+		}
+		
 		state.foundWords = chosenWords;
+		
 		
 		//TODO global vars for all the game state vars
 		//TODO on pause this has to be called
@@ -307,6 +317,8 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		myVersion++;
 		state.gameVersion = myVersion;
 		publishChangesToServer(state);
+	
+		
 	}
 	
 	/**
@@ -573,6 +585,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		if (status.equals("async")){
 			scoreScreen.putExtra("regId", regId);
 			scoreScreen.putExtra("oppRegId", oppRegId);
+			Log.d(TAG, "going to score screen passing it the oppRegId: " + oppRegId);
 		}
 		startActivity(scoreScreen);
 		finish();
@@ -667,6 +680,138 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	
 	private void setOpponentWords(){
 		opponentWords.setText(PersGlobals.getGlobals().getOpponentPriorWordString());
+	}
+	
+	private void showAsyncSwitcherDialog(){
+		PersGlobals.getGlobals().cancelPollingTask();
+		
+		AlertDialog.Builder startingAsyncDialog = new AlertDialog.Builder(this);
+		startingAsyncDialog.create();
+		startingAsyncDialog.setMessage(PersGlobals.getGlobals().getOpponent() + " has dropped out of the game. "
+				+ " Switch to Asynchronous mode or exit?");
+		startingAsyncDialog.setPositiveButton("Async", new DialogInterface.OnClickListener(){
+		
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				PersGlobals.getGlobals().setStatus("async");
+				status = "async";
+				dialog.cancel();
+			}
+			
+		});
+		startingAsyncDialog.setNegativeButton("Exit", new DialogInterface.OnClickListener(){
+		
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+				finish();
+			}
+			
+		});
+		startingAsyncDialog.setIcon(R.drawable.ic_launcher);
+		startingAsyncDialog.show();
+	}
+	
+	/**
+	 * Starts polling and continues until cancelled
+	 * checks "opponent" + "username" key
+	 * updates certain game state variables based on value gotten,
+	 * and animates the board based on new words the opponent has selected
+	 * @param key
+	 */
+	private void startPollingServer(final String key, final PersBoggleGame game){
+		//final PersBoggleGameView gameView = (PersBoggleGameView) findViewById(R.id.pers_boggle_game_view);
+		
+		AsyncTask<String, Integer, String> pollingServer = new AsyncTask<String, Integer, String>(){
+			@Override
+			protected String doInBackground(String... params) {
+				String key = params[0];
+				Log.d("PersBoggleGame", "Starting to poll server for " + key);
+				String json;
+				PersBoggleGameState opponentGame;
+				Gson gson = new Gson();
+				//poll server maximum of once every 500ms
+				while(true){
+					if (isCancelled() == true){
+						if(KeyValueAPI.isServerAvailable()){
+							//TODO move this somewhere else?
+							KeyValueAPI.clearKey("allenmic", "allenmic", key);
+						}
+						break;
+					}
+					
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						
+					}
+					
+					//resetOtherUserBlocks();
+					
+					if(KeyValueAPI.isServerAvailable()){
+						json = KeyValueAPI.get("allenmic", "allenmic", key);
+						
+						if (json != null && json != ""){
+
+							
+							
+							opponentGame = gson.fromJson(json, PersBoggleGameState.class);
+							if (opponentGame.gameStatus.equals("async")){
+								Log.d(TAG, "Got opp game with status async");
+								PersGlobals.getGlobals().setStatus("async");
+								return "async";
+							}
+							if(opponentGame.gameVersion > opponentVersion){
+								Log.d(TAG, "got new opponent state: " + json);
+								
+								//TODO
+								//set opponent score
+								//check game state vars
+								
+								//animateOpponentSelection(opponentGame.blockSelection);
+								
+								if (opponentGame.priorChosenWords != null && !opponentGame.priorChosenWords.isEmpty()){
+									PersGlobals.getGlobals().setOpponentPriorWords(opponentGame.priorChosenWords);
+								}
+								
+								if (opponentGame.foundWords != ""){
+									PersGlobals.getGlobals().setOpponentPriorWordString(opponentGame.foundWords);
+								}
+								
+								if (opponentGame.score > 0){
+									Log.d(TAG, "opponent score is now " + opponentGame.score);
+									publishProgress(opponentGame.score);
+									
+								}
+								
+								opponentVersion = opponentGame.gameVersion;
+							}
+								
+						}
+					}
+				}
+				
+				return null;
+				
+				
+			}
+			
+			protected void onProgressUpdate(Integer... progress) {
+				if (progress != null && progress[0] != null){
+					setOpponentScore(progress[0]);
+					setOpponentWords();
+				}
+		    }
+			
+			 protected void onPostExecute(String oppStatus) {
+				 if (oppStatus != null && oppStatus.equals("async")){
+					 Log.d(TAG, "Polling ended, status is:: " + oppStatus);
+					status = "async";
+				 }
+		     }
+			
+		};
+		pollingServer.execute(key);
 	}
 	
 

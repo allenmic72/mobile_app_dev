@@ -70,6 +70,8 @@ public class PersBoggleGCMHandler{
 		String timeSent = getExtraString("time");
 		String opponent = getExtraString("opponent");
 		String username = getExtraString("username");
+		String regId = getExtraString("regId");
+		String oppRegId = getExtraString("oppRegId");
 		
 		Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(200);
@@ -89,6 +91,8 @@ public class PersBoggleGCMHandler{
         notificationIntent.putExtra("username", username);
         notificationIntent.putExtra("opponent", opponent);
         notificationIntent.putExtra("time", timeSent);
+        notificationIntent.putExtra("regId", regId);
+        notificationIntent.putExtra("oppRegId", oppRegId);
         
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(PersBoggleMain.class);

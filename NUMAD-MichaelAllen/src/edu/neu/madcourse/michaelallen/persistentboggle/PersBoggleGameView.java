@@ -88,9 +88,7 @@ public class PersBoggleGameView extends View {
 		opponentVersion = 0;
 		//this.setBackgroundResource(R.drawable.bogglebck);
 		
-		if (PersGlobals.getGlobals().getStatus().equals("sync")){
-			startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this.game);
-		}
+		
 	}
 	
 	@Override
@@ -429,9 +427,6 @@ public class PersBoggleGameView extends View {
 			selectionAnimationBlocks = badSelectionBlocks;
 		}
 		
-		//selectionMatrix = convertRectsToMatrix(selectedBlocks, goodOrBad);
-		//this.game.packageGameStateAndPublish(selectionMatrix);
-		
 		clearAllSelections(selectionAnimationBlocks);
 	}
 	
@@ -535,88 +530,7 @@ public class PersBoggleGameView extends View {
 		
 	}
 	
-	/**
-	 * Starts polling and continues until cancelled
-	 * checks "opponent" + "username" key
-	 * updates certain game state variables based on value gotten,
-	 * and animates the board based on new words the opponent has selected
-	 * @param key
-	 */
-	private void startPollingServer(final String key, final PersBoggleGame game){
-		//final PersBoggleGameView gameView = (PersBoggleGameView) findViewById(R.id.pers_boggle_game_view);
-		
-		AsyncTask<String, Void, Void> pollingServer = new AsyncTask<String, Void, Void>(){
-			@Override
-			protected Void doInBackground(String... params) {
-				String key = params[0];
-				Log.d("PersBoggleGame", "Starting to poll server for " + key);
-				
-				//poll server maximum of once every 500ms
-				while(true){
-					if (isCancelled() == true){
-						if(KeyValueAPI.isServerAvailable()){
-							//TODO move this somewhere else?
-							KeyValueAPI.clearKey("allenmic", "allenmic", key);
-						}
-						break;
-					}
-					
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						
-					}
-					
-					resetOtherUserBlocks();
-					
-					if(KeyValueAPI.isServerAvailable()){
-						String json = KeyValueAPI.get("allenmic", "allenmic", key);
-						
-						if (json != null && json != ""){
-
-							
-							Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-							PersBoggleGameState opponentGame = gson.fromJson(json, PersBoggleGameState.class);
-							
-							if(opponentGame.gameVersion > opponentVersion){
-								Log.d(TAG, "got new opponent state: " + json);
-								//TODO
-								//set opponent score
-								//check game state vars
-								
-								//animateOpponentSelection(opponentGame.blockSelection);
-								
-								if (opponentGame.priorChosenWords != null && !opponentGame.priorChosenWords.isEmpty()){
-									PersGlobals.getGlobals().setOpponentPriorWords(opponentGame.priorChosenWords);
-								}
-								
-								if (opponentGame.foundWords != ""){
-									PersGlobals.getGlobals().setOpponentPriorWordString(opponentGame.foundWords);
-								}
-								
-								if (opponentGame.score > 0){
-									Log.d(TAG, "opponent score is now " + opponentGame.score);
-									boolean b = game.handler.sendEmptyMessage(opponentGame.score);
-									Log.d(TAG, "message placing successful? " + b);
-									
-								}
-								
-								opponentVersion = opponentGame.gameVersion;
-							}
-								
-						}
-					}
-				}
-				
-				return null;
-				
-				
-			}
-			
-		};
-		pollingServer.execute(key);
-		PersGlobals.getGlobals().setPollingTask(pollingServer);
-	}
+	
 	
 	private void resetOtherUserBlocks(){//reset the opponent selected blocks
 		for(int i = 0; i < goodOtherUserBlocks.size(); i++){						

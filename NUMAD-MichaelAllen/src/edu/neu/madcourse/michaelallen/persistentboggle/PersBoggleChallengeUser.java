@@ -68,11 +68,15 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 				
 				AsyncTask<Void, Void, String[]> sendChallengeOrStartAsyncGame = new AsyncTask<Void, Void, String[]>(){
 
+					PersBoggleAsyncGameHelper asyncHelper;
 					protected String[] doInBackground(Void... params) {
 						if (KeyValueAPI.isServerAvailable()){
 							int modeChecked = mode.getCheckedRadioButtonId();
 							Log.d("Challenge", "button checked: " + modeChecked);
 							String oppPhoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);		
+							
+							PersBoggleAsyncGameHelper asyncHelper = new PersBoggleAsyncGameHelper(context, oppPhoneNum);
+							String [] regids = asyncHelper.getRegIds();
 							
 							if (modeChecked == R.id.pers_boggle_sync_radio){
 								
@@ -94,6 +98,11 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							        mesBuilder.addData("message", "What up bro");
 							        mesBuilder.addData("time", dateString);
 							        mesBuilder.addData("type", "challenge");
+							        if (regids != null){
+							        	//add regids reversed
+										mesBuilder.addData("oppRegId", regids[0]);
+										mesBuilder.addData("regId", regids[1]);
+									}
 							        serv.sendMessage(mesBuilder.build(), oppPhoneNum);
 							       
 							        waitUntilUserAccepts = new waitUntilUserAcceptsChallenge(context);
@@ -103,17 +112,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							
 							}
 							else{
-								TelephonyManager mTelephonyMgr = (TelephonyManager)
-								        getSystemService(Context.TELEPHONY_SERVICE);
-
-								String myPhoneNum = mTelephonyMgr.getLine1Number();
-								    
-								String regId = KeyValueAPI.get("allenmic", "allenmic", oppPhoneNum + "regId");
-								String oppRegId = KeyValueAPI.get("allenmic", "allenmic", myPhoneNum + "regId");
-								String[] result = new String[2];
-								result[0] = regId;
-								result[1] = oppRegId;
-								return result;
+								return regids;
 							}
 							
 						}
@@ -222,6 +221,9 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 		long startTime = Calendar.getInstance().getTimeInMillis();
 		long currentTime;
 		String opponent = params[0];
+		String regId = "";
+		String oppRegId = "";
+		String oppPhoneNum = "";
 		
 		//clear the key in case a past game state is still there
 		if (KeyValueAPI.isServerAvailable()){
@@ -242,6 +244,13 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 				this.cancel(true);
 			}
 			if (KeyValueAPI.isServerAvailable()){
+				if (oppPhoneNum.equals("")){
+					oppPhoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);
+					PersBoggleAsyncGameHelper asyncHelper = new PersBoggleAsyncGameHelper(c, oppPhoneNum);
+					String[] regids = asyncHelper.getRegIds();
+					regId = regids[0];
+					oppRegId = regids[1];
+				}
 				Gson gson = new Gson();
 				String gameState = KeyValueAPI.get("allenmic", "allenmic", opponent + PersGlobals.getGlobals().getUsername());
 				if (gameState != null && gameState != ""){
@@ -252,6 +261,8 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 					startGame.putExtra("leader", false);
 					startGame.putExtra("opponent", opponent);
 					startGame.putExtra("status", state.gameStatus);
+					startGame.putExtra("regId", regId);
+					startGame.putExtra("oppRegId", oppRegId);
 					c.startActivity(startGame);
 					this.cancel(true);
 				}

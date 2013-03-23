@@ -20,6 +20,8 @@ import android.widget.Toast;
 public class PersBoggleAcceptChallenge extends Activity implements OnClickListener{
 	String opponent;
 	String username;
+	String regId;
+	String oppRegId;
 	
 	protected void onCreate(Bundle savedInstanceState) {    	
     	super.onCreate(savedInstanceState);
@@ -37,6 +39,8 @@ public class PersBoggleAcceptChallenge extends Activity implements OnClickListen
     	
     	opponent = getIntent().getStringExtra("opponent");
     	username = getIntent().getStringExtra("username");
+    	regId = getIntent().getStringExtra("regId");
+    	oppRegId = getIntent().getStringExtra("oppRegId");
     	
     	if (!withinLastFiveMinutes(timeSent)){
     		RadioButton syncRadio = (RadioButton) findViewById(R.id.pers_boggle_accept_sync_radio);
@@ -57,6 +61,8 @@ public class PersBoggleAcceptChallenge extends Activity implements OnClickListen
 		i.putExtra("opponent", opponent);
 		i.putExtra("username", username);
 		i.putExtra("leader", true);
+		i.putExtra("regId", regId);
+		i.putExtra("oppRegId", oppRegId);
 		
 		RadioGroup r = (RadioGroup) findViewById(R.id.pers_boggle_accept_radiogroup);
 		int id = r.getCheckedRadioButtonId();
