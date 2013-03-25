@@ -58,12 +58,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
         View boggleChallengeButton = findViewById(R.id.pers_boggle_challenge_button);
         boggleChallengeButton.setOnClickListener(this);
 		
-        if (canAccessNetwork()){
-            AsyncTask<Integer, Void, String> setHSList = new PersBoggleGetHighScoresAndUpdate(this);
-            setHSList.execute(-1, -1);
-        }
         
-        getUsername();
         
         
 
@@ -74,6 +69,12 @@ public class PersBoggleMain extends Activity implements OnClickListener{
     protected void onResume() {
        super.onResume();
        
+       if (canAccessNetwork()){
+           AsyncTask<Integer, Void, String> setHSList = new PersBoggleGetHighScoresAndUpdate(this);
+           setHSList.execute(-1, -1);
+       }
+       
+       getUsername();
        if (PersGlobals.getGlobals().newGameStarted()){
     	   continueButton.setVisibility(View.VISIBLE);
        }
@@ -86,6 +87,12 @@ public class PersBoggleMain extends Activity implements OnClickListener{
     protected void onPause() {
        super.onPause();
        //BoggleMusic.stop(this);
+    }
+    
+    @Override
+    protected void onStop() {
+       super.onStop();
+       PersGlobals.getGlobals().cancelWaitTask();
     }
 
     
@@ -275,7 +282,7 @@ class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
 			Type type = new TypeToken<ArrayList<String>>(){}.getType();
 			
 			String jsonFromServer = KeyValueAPI.get("allenmic", "allenmic", "usernames");
-			//Log.d("addToarray", "json array on server is " + jsonFromServer);					
+			Log.d("addToarray", "json array on server is " + jsonFromServer);					
 			if (jsonFromServer == null || jsonFromServer == ""){ //first user to be added
 			//	Log.d("", "here");
 				ArrayList<String> newArray = new ArrayList<String>();

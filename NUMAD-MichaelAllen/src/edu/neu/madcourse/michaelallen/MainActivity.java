@@ -19,6 +19,7 @@ import edu.neu.madcourse.michaelallen.sudoku.Sudoku;
 import edu.neu.mobileClass.*;
 import edu.neu.mobileclass.apis.KeyValueAPI;
 
+import com.google.android.gcm.GCMBroadcastReceiver;
 import com.google.android.gcm.GCMRegistrar;
 
 import static edu.neu.madcourse.michaelallen.GCMIntentService.SENDER_ID;
@@ -57,7 +58,7 @@ public class MainActivity extends Activity implements OnClickListener{
         View persistentBoggleButton = findViewById(R.id.pers_boggle_main_button);
         persistentBoggleButton.setOnClickListener(this);
         
-        registerReceiver(mHandleMessageReceiver, new IntentFilter("edu.neu.madcourse.michaelallen.DISPLAY_MESSAGE"));
+        //registerReceiver(mHandleMessageReceiver, new IntentFilter("edu.neu.madcourse.michaelallen.DISPLAY_MESSAGE"));
         
     }
 
@@ -70,9 +71,14 @@ public class MainActivity extends Activity implements OnClickListener{
 
     @Override
     protected void onDestroy(){
-    	 unregisterReceiver(mHandleMessageReceiver);
-         GCMRegistrar.onDestroy(this);
-         super.onDestroy();
+    	//unregisterReceiver(mHandleMessageReceiver);
+    	try{
+    		GCMRegistrar.onDestroy(this);
+    	}
+    	catch(Exception E){
+    		
+    	}
+        super.onDestroy();
     }
     
 	@Override
@@ -109,6 +115,7 @@ public class MainActivity extends Activity implements OnClickListener{
 	 * register device with GCM if it is not already registered
 	 */
 	public void registerGCM(){
+		
 		GCMRegistrar.checkDevice(this);
 		GCMRegistrar.checkManifest(this);
 		final String regId = GCMRegistrar.getRegistrationId(this);
@@ -157,13 +164,5 @@ public class MainActivity extends Activity implements OnClickListener{
 	    
 	}
 	
-	  private final BroadcastReceiver mHandleMessageReceiver =
-	            new BroadcastReceiver() {
-	        @Override
-	        public void onReceive(Context context, Intent intent) {
-	        	
-	        }
-	    };
-	
-    
+	  
 }
