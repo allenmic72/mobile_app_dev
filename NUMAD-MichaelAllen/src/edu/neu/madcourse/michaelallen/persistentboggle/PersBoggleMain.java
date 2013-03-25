@@ -42,8 +42,6 @@ public class PersBoggleMain extends Activity implements OnClickListener{
         
         View exitButton = findViewById(R.id.pers_boggle_exit_button);
         exitButton.setOnClickListener(this);
-        View newGameButton = findViewById(R.id.pers_boggle_new_game_button);
-        newGameButton.setOnClickListener(this);
         
         View acknowledgementsButton = findViewById(R.id.pers_boggle_acknowledgements_button);
         acknowledgementsButton.setOnClickListener(this);
@@ -61,8 +59,8 @@ public class PersBoggleMain extends Activity implements OnClickListener{
         boggleChallengeButton.setOnClickListener(this);
 		
         if (canAccessNetwork()){
-            AsyncTask<Integer, Void, String> setHSList = new PersBoggleGetHighScoresAndUpdate();
-            setHSList.execute(-1);
+            AsyncTask<Integer, Void, String> setHSList = new PersBoggleGetHighScoresAndUpdate(this);
+            setHSList.execute(-1, -1);
         }
         
         getUsername();
@@ -98,14 +96,6 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 		 case R.id.pers_boggle_exit_button:
 			 finish();
 			 break;
-		 case R.id.pers_boggle_new_game_button:
-			 if (checkUserName()){
-				 Intent boggleGame = new Intent(this, PersBoggleGame.class);
-				 startActivity(boggleGame);
-				 PersGlobals.getGlobals().setNewGame(true);
-				 Log.d("username", "starting game with saved name: " + PersGlobals.getGlobals().getUsername());
-			 }
-			 break;
 		 case R.id.pers_boggle_acknowledgements_button:
 			 Intent boggleack = new Intent(this, PersBoggleAcknowledgements.class);
 			 startActivity(boggleack);
@@ -136,15 +126,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 	}
 	
 	private boolean canAccessNetwork() {
-	    ConnectivityManager connectivityManager 
-	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-	    if (activeNetworkInfo != null){
-	    	return true;
-	    }
-	    else{
-	    	return false;
-	    }
+	    return PersGlobals.getGlobals().canAccessNetwok(this);
 	    
 	}
 	
@@ -159,7 +141,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 			PersGlobals.getGlobals().setUsername(username);
 			Log.d("MainActivity getUsername", "username is " + username);
 			
-			AsyncTask<String, Void, Void> addUsernameToArray = new addToArrayOfUsersOnServer();
+			AsyncTask<String, Void, Void> addUsernameToArray = new addToArrayOfUsersOnServer(this);
 			addUsernameToArray.execute(username);
 		}
 		else{
@@ -169,7 +151,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 					    getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
 				String phoneNumber = tm.getLine1Number();
 				
-	            AsyncTask<String, Void, String> usernameFromServer = new getUsernameFromServer();
+	            AsyncTask<String, Void, String> usernameFromServer = new getUsernameFromServer(this);
 	            usernameFromServer.execute(phoneNumber);
 	            //TODO 
 	        }
@@ -206,7 +188,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 				AsyncTask<String, Void, Void> putNameToPhone = new PersBogglePutKeyValToServer();
 				putNameToPhone.execute(username, phoneNumber);
 				
-				AsyncTask<String, Void, Void> addUsernameToArray = new addToArrayOfUsersOnServer();
+				AsyncTask<String, Void, Void> addUsernameToArray = new addToArrayOfUsersOnServer(c);
 				addUsernameToArray.execute(username);
 					
 				PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
@@ -240,7 +222,11 @@ public class PersBoggleMain extends Activity implements OnClickListener{
  *
  */
 class getUsernameFromServer extends AsyncTask<String, Void, String>{
-
+	final Context c;
+	getUsernameFromServer(Context c){
+		this.c = c;
+	}
+	
 	@Override
 	protected String doInBackground(String... params) {
 		String phoneNumber = params[0];
@@ -249,6 +235,10 @@ class getUsernameFromServer extends AsyncTask<String, Void, String>{
 			String username = KeyValueAPI.get(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
 					phoneNumber);
 			if (username != null && username != "") {
+				PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
+				if (c != null){
+					spref.putString(c, "username", username);
+				}
 				PersGlobals.getGlobals().setUsername(username);
 				Log.d("getUsername Server", "just got username from server: " + username);
 			}
@@ -260,7 +250,7 @@ class getUsernameFromServer extends AsyncTask<String, Void, String>{
 	}
 	
 	private boolean canAccessServer() {
-    	return KeyValueAPI.isServerAvailable();
+    	return PersGlobals.getGlobals().canAccessNetwok(c) && KeyValueAPI.isServerAvailable();
 	}
 	
 	
@@ -272,13 +262,21 @@ class getUsernameFromServer extends AsyncTask<String, Void, String>{
  *
  */
 class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
-
+	final Context c;
+	addToArrayOfUsersOnServer(Context c){
+		this.c = c;
+	}
+	
 	@Override
 	protected Void doInBackground(String... params) {
 		String username = params[0];
-		if(KeyValueAPI.isServerAvailable()){
+		if(PersGlobals.getGlobals().canAccessNetwok(c) && KeyValueAPI.isServerAvailable()){
+			PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
+			Gson gson = new Gson();
+			Type type = new TypeToken<ArrayList<String>>(){}.getType();
+			
 			String jsonFromServer = KeyValueAPI.get("allenmic", "allenmic", "usernames");
-			Log.d("addToarray", "json array on server is " + jsonFromServer);
+			Log.d("addToarray", "json array on server is " + jsonFromServer);					
 			if (jsonFromServer == null || jsonFromServer == ""){ //first user to be added
 				Log.d("", "here");
 				ArrayList<String> newArray = new ArrayList<String>();
@@ -287,9 +285,6 @@ class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
 				addToArrayAndPutOnServer(newArray, username);
 			}
 			else{
-				Gson gson = new Gson();
-				Type type = new TypeToken<ArrayList<String>>(){}.getType();
-				
 				ArrayList<String> oldArray = gson.fromJson(jsonFromServer, type);
 				
 				
@@ -300,6 +295,10 @@ class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
 				}
 				else{//don't want ourselves in the otherUsers array
 					//oldArray.remove(username);
+					if (c != null){
+						String sprefJson = gson.toJson(oldArray);
+						spref.putString(c, "usernames", sprefJson);
+					}
 					PersGlobals.getGlobals().setOtherUsers(oldArray);
 				}
 				

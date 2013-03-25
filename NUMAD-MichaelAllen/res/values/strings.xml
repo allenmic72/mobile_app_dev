@@ -20,7 +20,7 @@
     <string name="boggle_timer_start">3:00</string>
     <string name="boggle_game_quit">Quit</string>
     <string name="boggle_score_screen_title">Game Stats</string>
-    <string name="boggle_main_screen_text">Return to Main</string>
+    <string name="boggle_main_screen_text">Exit</string>
     <string name="boggle_continue_button_label">Continue Game</string>
     <string name="boggle_pause_text">Pause</string>
     <string name="boggle_resume_text">Resume</string>
@@ -55,6 +55,7 @@
     <string name="pers_boggle_accept_challenge_label">Accept the Challenge?</string>
     <string name="pers_boggle_radio_sync">Synchronous Mode</string>
     <string name="pers_boggle_radio_async">Asynchronous Mode</string>
+    <string name="pers_boggle_game_paused_overlay">Game Paused</string>
     
    <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>

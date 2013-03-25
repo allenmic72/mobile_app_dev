@@ -1,8 +1,10 @@
 package edu.neu.madcourse.michaelallen.persistentboggle;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import edu.neu.madcourse.michaelallen.R;
 import android.app.Activity;
@@ -18,6 +20,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TableRow;
+import android.widget.Toast;
 
 
 public class PersBoggleViewHighScores extends Activity implements OnClickListener{
@@ -35,6 +38,22 @@ public class PersBoggleViewHighScores extends Activity implements OnClickListene
     	 
     	ArrayList<String> hsStrings = new ArrayList<String>();
     	ArrayList<PersBoggleHighScore> hs = PersGlobals.getGlobals().getHighScoreList();
+    	if (hs == null){ //check spref for a copy of the hsList
+    		try{
+    			Gson gson = new Gson();
+    			PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
+        		String hsList = spref.getString(this, "pers_highscores");
+        		if (hsList != null && hsList != ""){
+        			Type hsType = new TypeToken<ArrayList<PersBoggleHighScore>>(){}.getType();
+        			hs = gson.fromJson(hsList, hsType);
+        			CharSequence text = "Trouble connecting to server. Using cached high scores";
+            		Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+        		}
+    		}
+    		catch (RuntimeException E){
+    		}
+    		
+    	}
     	if (hs != null){
     		if (hs.size() == 0){
     			hsStrings.add("There are no High Scores at this time. Play some Persistent Boggle!");

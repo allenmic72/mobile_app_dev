@@ -8,6 +8,8 @@ import edu.neu.madcourse.michaelallen.sudoku.Game;
 import android.content.Context;
 import android.graphics.Rect;
 import android.media.SoundPool;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 
@@ -49,7 +51,7 @@ public class PersGlobals{
 	private String teamname = "allenmic";
 	private String password = "allenmic";
 	
-	private ArrayList<String> otherUsers = new ArrayList<String>();
+	private ArrayList<String> otherUsers = null;
 	private ArrayList<Rect> otherUserBlocks = new ArrayList<Rect>();
 	
 	private AsyncTask<String, Void, Void> pollingServer;
@@ -306,6 +308,18 @@ public class PersGlobals{
 	
 	public void setOpponentPriorWordString(String foundWords){
 		opponentPriorWordString = foundWords;
+	}
+	
+	public boolean canAccessNetwok(Context c){
+		ConnectivityManager connectivityManager 
+			= (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+		if (activeNetworkInfo != null){
+		  return true;
+		}
+	  	else{
+		  return false;
+	  	}
 	}
 	
 	public static PersGlobals getGlobals(){

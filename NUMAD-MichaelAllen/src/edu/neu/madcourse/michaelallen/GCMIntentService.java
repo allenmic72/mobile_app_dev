@@ -107,42 +107,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	    }
 	    
 	}
-	
-	 /**
-     * Issues a notification to inform the user that server has sent a message.
-     */
-    private static void generateNotification(Context context, String username, String time) {
-        Vibrator v = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
-        v.vibrate(100);
-        int icon = R.drawable.ic_launcher;
-        NotificationManager notificationManager = (NotificationManager)
-                context.getSystemService(Context.NOTIFICATION_SERVICE);
-        
-        NotificationCompat.Builder notification = 
-        		new NotificationCompat.Builder(context)
-       			.setSmallIcon(icon)
-       			.setContentTitle("Challenged!")
-       			.setContentText(username + " has challenged you!")
-       			.setAutoCancel(true);
-        
 
-        Intent notificationIntent = new Intent(context, PersBoggleGame.class);
-        notificationIntent.putExtra("opponent", username);
-        notificationIntent.putExtra("time", time);
-        
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        stackBuilder.addParentStack(PersBoggleMain.class);
-        stackBuilder.addNextIntent(notificationIntent);
-        
-        PendingIntent pendingIntent =
-                stackBuilder.getPendingIntent(
-                    0,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        notification.setContentIntent(pendingIntent);
-        
-        notificationManager.notify(username.hashCode(), notification.build());
-        
-    }
 	
 }

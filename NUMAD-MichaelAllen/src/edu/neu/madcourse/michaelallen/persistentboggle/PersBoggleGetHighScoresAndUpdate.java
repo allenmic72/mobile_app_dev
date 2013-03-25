@@ -26,55 +26,75 @@ import android.util.Log;
  *
  */
 public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, String>{
-
+	final Context c;
+	PersBoggleGetHighScoresAndUpdate(Context c){
+		this.c = c;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	protected String doInBackground(Integer... params) {
-		if (!canAccessServer()){
-			//TODO no access to server, defer the high scoring?
-		}
-		int newHSint = params[0];
-		Calendar c = Calendar.getInstance();
-		Date date = c.getTime();
-		String dateString = date.toString();
-		PersBoggleHighScore newHS = new PersBoggleHighScore(newHSint, PersGlobals.getGlobals().getUsername(), dateString);
-		
-		String hsList = KeyValueAPI.get(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
-				"pers_highscores");
-		
-		if (hsList == ""){
-			noPriorHS(newHS);
+		if (canAccessServer()){
+			int userNewHSint = params[0];
+			int opponentNewHSint = params[1];
+			Calendar c = Calendar.getInstance();
+			Date date = c.getTime();
+			String dateString = date.toString();
+			PersBoggleHighScore userNewHS = new PersBoggleHighScore(userNewHSint, PersGlobals.getGlobals().getUsername(), dateString);
+			PersBoggleHighScore opponentNewHS = new PersBoggleHighScore(opponentNewHSint, PersGlobals.getGlobals().getOpponent(), dateString);
+			
+			String hsList = KeyValueAPI.get(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
+					"pers_highscores");
+			
+			if (hsList == ""){
+				noPriorHS(userNewHS, opponentNewHS);
+			}
+			else{
+				Gson gson = new Gson();
+				
+				try{
+				Type hsType = new TypeToken<ArrayList<PersBoggleHighScore>>(){}.getType();
+				ArrayList<PersBoggleHighScore> oldHighScore = new ArrayList<PersBoggleHighScore>();
+				oldHighScore = gson.fromJson(hsList, hsType);
+				
+				ArrayList<PersBoggleHighScore> newhsList = checkOldHighScores(0, oldHighScore, userNewHS);
+				if (opponentNewHS.score > 0){
+					newhsList = checkOldHighScores(0, newhsList, opponentNewHS);
+				}
+				
+				String jjson = gson.toJson(newhsList);
+				KeyValueAPI.put(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
+						"pers_highscores", jjson);
+				PersGlobals.getGlobals().setHighScoreList(newhsList);
+				
+				return jjson;
+				}
+				catch (JsonSyntaxException e){
+					
+				}
+			}
+			
+
+			return "";
 		}
 		else{
-			Gson gson = new Gson();
-			
-			try{
-			Type hsType = new TypeToken<ArrayList<PersBoggleHighScore>>(){}.getType();
-			ArrayList<PersBoggleHighScore> oldHighScore = new ArrayList<PersBoggleHighScore>();
-			oldHighScore = gson.fromJson(hsList, hsType);
-			
-			ArrayList<PersBoggleHighScore> newhsList = checkOldHighScores(0, oldHighScore, newHS);
-			String jjson = gson.toJson(newhsList);
-			KeyValueAPI.put(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
-					"pers_highscores", jjson);
-			PersGlobals.getGlobals().setHighScoreList(newhsList);
-			}
-			catch (JsonSyntaxException e){
-				
-			}
+			return "";
 		}
 		
-
-		return hsList;
 	}
 	
 	protected void onPostExecute(String hsList) {
+		if (c != null && hsList != ""){
+			PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
+			spref.putString(c, "pers_highscores", hsList);
+		}
 	}
 	
-	private void noPriorHS(PersBoggleHighScore newHS){
+	private void noPriorHS(PersBoggleHighScore newHS, PersBoggleHighScore opponentNewHS){
 		ArrayList<PersBoggleHighScore> highScores = new ArrayList<PersBoggleHighScore>();
 		if (newHS.score >= 0){
 			highScores.add(newHS);
+			highScores = checkOldHighScores(0, highScores, opponentNewHS);
 			
 			Gson gson = new Gson();
 			String jjson = gson.toJson(highScores);
@@ -110,7 +130,12 @@ public class PersBoggleGetHighScoresAndUpdate extends AsyncTask<Integer, Void, S
 	}
 	
 	private boolean canAccessServer() {
-	    	return KeyValueAPI.isServerAvailable();
+	    	if (PersGlobals.getGlobals().canAccessNetwok(c)){
+	    		return KeyValueAPI.isServerAvailable();
+	    	}
+	    	else{
+	    		return false;
+	    	}
 	}	
 	
 }

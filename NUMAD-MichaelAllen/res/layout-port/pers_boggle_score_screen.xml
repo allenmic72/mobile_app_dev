@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="40dip"
-    android:background="@drawable/score_scrn_gradient"
+    android:background="@drawable/brown_gradient"
     android:typeface="serif">
     
     <TextView
@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
     	android:layout_height="wrap_content" 
     	android:text=""
-    	android:textSize="24sp" >
+    	android:textSize="16sp" >
     </TextView>
     
     <TextView
@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
     	android:layout_height="wrap_content" 
     	android:text=""
-    	android:textSize="16sp" >
+    	android:textSize="12sp" >
     </TextView>
     
     <TextView
@@ -29,7 +29,7 @@
         android:layout_width="match_parent"
     	android:layout_height="wrap_content" 
     	android:text=""
-    	android:textSize="16sp"
+    	android:textSize="12sp"
         />
     
     <Button

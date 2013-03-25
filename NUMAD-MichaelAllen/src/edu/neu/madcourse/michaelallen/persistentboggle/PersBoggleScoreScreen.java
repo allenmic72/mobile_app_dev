@@ -40,14 +40,26 @@ public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 		scoreText.setText(text);
 		
 		TextView wordsFound = (TextView) findViewById(R.id.pers_boggle_score_screen_words);
+		TextView opponentWordsFound = (TextView) findViewById(R.id.pers_boggle_score_screen_opponent_words);
+		
 		String wordsFoundText = "";
+		String opponentWordsFoundText = "";
+		
 		ArrayList<String> foundWords = PersGlobals.getGlobals().getUserPriorWords();
 		for (int i = 0; i < foundWords.size(); i++){
 			wordsFoundText = wordsFoundText + " " + foundWords.get(i);
 		}
 		wordsFound.setText("You found the following words: " + wordsFoundText);
+		if (PersGlobals.getGlobals().getOpponentPriorWordString() != ""){
+			opponentWordsFound.setText(PersGlobals.getGlobals().getOpponentPriorWordString());
+		}
 		
-		saveScoreIfHigh(PersGlobals.getGlobals().getScore());
+		if (PersGlobals.getGlobals().getLeader()){
+			saveScoreIfHigh(PersGlobals.getGlobals().getScore(), PersGlobals.getGlobals().getOpponentScore());
+		}
+		else{
+			saveScoreIfHigh(-1, -1); 
+		}
 		
 		View mainScreen = findViewById(R.id.pers_boggle_main_screen_button);
 		mainScreen.setOnClickListener(this);
@@ -66,13 +78,19 @@ public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 		
 	}
 	
-	public void saveScoreIfHigh(int score){		
+	public void saveScoreIfHigh(int score, int oppScore){		
 		ConnectivityManager connectivityManager 
         = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 		if (activeNetworkInfo != null){
-			AsyncTask<Integer, Void, String> updateHighScores = new PersBoggleGetHighScoresAndUpdate();
-			updateHighScores.execute(score);
+			AsyncTask<Integer, Void, String> updateHighScores = new PersBoggleGetHighScoresAndUpdate(this);
+			if (PersGlobals.getGlobals().getStatus().equals("sync")){
+				updateHighScores.execute(score, oppScore);
+			}
+			else{
+				updateHighScores.execute(score, -1);
+			}
+			
 		}
 		else{
 			//TODO what to do if no internet connection when saving score?

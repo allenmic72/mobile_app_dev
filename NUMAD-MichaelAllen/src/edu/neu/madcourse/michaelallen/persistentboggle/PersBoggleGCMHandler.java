@@ -143,6 +143,7 @@ public class PersBoggleGCMHandler{
         notificationIntent.putExtra("score", score);
         notificationIntent.putExtra("opponentScore", opponentScore);
         notificationIntent.putExtra("status", "async");
+        notificationIntent.putExtra("leader", true);
         
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(PersBoggleMain.class);

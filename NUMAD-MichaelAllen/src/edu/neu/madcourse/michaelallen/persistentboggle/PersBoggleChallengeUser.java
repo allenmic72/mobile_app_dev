@@ -1,5 +1,6 @@
 package edu.neu.madcourse.michaelallen.persistentboggle;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -7,6 +8,7 @@ import java.util.Date;
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.Message.Builder;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import edu.neu.madcourse.michaelallen.R;
 import edu.neu.mobileclass.apis.KeyValueAPI;
@@ -47,7 +49,29 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
     	
     	ListView listv = (ListView) findViewById(R.id.pers_boggle_challenge_view);
     	
-    	final ArrayList<String> otherUsers = PersGlobals.getGlobals().getOtherUsers();
+    	ArrayList<String> otherUsersBefore = PersGlobals.getGlobals().getOtherUsers();
+    	if (otherUsersBefore == null){
+    		try{
+    			PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
+        		String json = spref.getString(this, "usernames");
+        		Gson gson = new Gson();
+        		Type type = new TypeToken<ArrayList<String>>(){}.getType();
+        		otherUsersBefore = gson.fromJson(json, type);
+        		if (otherUsersBefore.size() > 0){
+        			CharSequence text = "Trouble connecting to server. Using cached opponents";
+            		Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+        		}
+    		}
+    		catch (RuntimeException E){
+    			otherUsersBefore = new ArrayList<String>();
+    		}
+    	}
+    	final ArrayList<String> otherUsers = otherUsersBefore;
+    	
+    	if (otherUsers.size() < 1){
+    		CharSequence text = "You're the first to play the game. Find a friend to play against!";
+    		Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+    	}
     	
     	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.pers_boggle_challenge_textview, otherUsers);
     	
@@ -70,7 +94,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 
 					PersBoggleAsyncGameHelper asyncHelper;
 					protected String[] doInBackground(Void... params) {
-						if (KeyValueAPI.isServerAvailable()){
+						if (PersGlobals.getGlobals().canAccessNetwok(context) && KeyValueAPI.isServerAvailable()){
 							int modeChecked = mode.getCheckedRadioButtonId();
 							Log.d("Challenge", "button checked: " + modeChecked);
 							String oppPhoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);		
@@ -116,6 +140,9 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							}
 							
 						}
+						CharSequence toastText = "Please connect to the Internet before starting a game";
+				        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+						this.cancel(true);
 						return null;
 					}
 					
@@ -176,7 +203,6 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 
 				};
 				sendChallengeOrStartAsyncGame.execute();
-				
 				
 			}
     		}); 

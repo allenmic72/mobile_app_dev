@@ -24,5 +24,6 @@
    <color name="text_shadow">#7F000000</color>
    <color name="pers_boggle_user_text">#FF9933CC</color>
    <color name="pers_boggle_opponent_text">#FFCC0000</color>
+   <color name="pers_boggle_paused_overlay_color">#FF919191</color>
    
 </resources>

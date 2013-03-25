@@ -5,10 +5,10 @@
     android:background="@drawable/pers_boggle_game_gradient"
     android:paddingLeft="40dp"
     android:paddingRight="40dp"
-    android:paddingTop="30dp"
-    android:paddingBottom="30dp"
+    android:paddingTop="15dp"
+    android:paddingBottom="15dp"
     android:typeface="sans"
-    android:textSize="8sp"> 
+    android:textSize="7sp"> 
     
     <TextView 
         android:id="@+id/placeholder"
