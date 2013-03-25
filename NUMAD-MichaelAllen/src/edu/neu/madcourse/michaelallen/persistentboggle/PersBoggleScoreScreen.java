@@ -54,6 +54,10 @@ public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 			opponentWordsFound.setText(PersGlobals.getGlobals().getOpponentPriorWordString());
 		}
 		
+		if (PersGlobals.getGlobals().getStatus().equals("sync")){
+			showDialogToUser();
+		}
+		
 		if (PersGlobals.getGlobals().getLeader()){
 			saveScoreIfHigh(PersGlobals.getGlobals().getScore(), PersGlobals.getGlobals().getOpponentScore());
 		}
@@ -99,20 +103,31 @@ public class PersBoggleScoreScreen extends Activity implements OnClickListener{
 		
 	}
 	
-	private void showDialogToUser(int i){
+	private void showDialogToUser(){
+		int score = PersGlobals.getGlobals().getScore();
+		int oppScore = PersGlobals.getGlobals().getOpponentScore();
+		String message = "";
+		String button = "";
+		if (score > oppScore){
+			message = "Woohoo! You defeated " + PersGlobals.getGlobals().getOpponent() + "!";
+			button = "Cool";
+		}
+		else if(score == oppScore) {
+			message = "You tied " + PersGlobals.getGlobals().getOpponent() + ", that's no fun..";
+			button = "Ok";
+		}
+		else{
+			message = PersGlobals.getGlobals().getOpponent() + " beat you! Better luck next time.";
+			button = "Darn";
+		}
 		AlertDialog.Builder IdDialogBuilder = new AlertDialog.Builder(this);
 		IdDialogBuilder.create();
-		i++;
-		IdDialogBuilder.setMessage("You got the #" + i + " position on the High Score list!");
-		IdDialogBuilder.setPositiveButton("Cool", new DialogInterface.OnClickListener(){
+		IdDialogBuilder.setMessage(message);
+		IdDialogBuilder.setPositiveButton(button, new DialogInterface.OnClickListener(){
 		
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				SharedPreferences spr = getSharedPreferences(PersGlobals.getGlobals().getHighScorePrefName(), 0);
-				Gson gson = new Gson();
-
-				String oldHS = spr.getString("pers_highscores", null);
-				Log.d("tst", oldHS + " ");
+				dialog.cancel();
 			}
 			
 		});

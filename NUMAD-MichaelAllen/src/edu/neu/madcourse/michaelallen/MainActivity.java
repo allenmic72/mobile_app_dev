@@ -33,7 +33,7 @@ public class MainActivity extends Activity implements OnClickListener{
         
         
         //TODO: uncomment this
-        //PhoneCheckAPI.doAuthorization(this);
+        PhoneCheckAPI.doAuthorization(this);
 
         registerGCM();
         
@@ -115,7 +115,7 @@ public class MainActivity extends Activity implements OnClickListener{
 		if (regId.equals("")) {
 		  GCMRegistrar.register(this, SENDER_ID);
 		} else {
-		  Log.v("GCM Registering", "Already registered" + regId);
+		 // Log.v("GCM Registering", "Already registered" + regId);
 		  
 		  //check to see if it is stored on server
 		  AsyncTask<String, Void, Void> checkServerForRegId = new AsyncTask<String, Void, Void>(){
@@ -129,11 +129,11 @@ public class MainActivity extends Activity implements OnClickListener{
 					String phoneNumber = tm.getLine1Number();
 					String serverRegId = KeyValueAPI.get("allenmic", "allenmic", phoneNumber + "regId");
 					if (serverRegId == null || serverRegId == ""){
-						Log.d("registerGCM", "regId on server DNE, putting " + regId);
+						//Log.d("registerGCM", "regId on server DNE, putting " + regId);
 						KeyValueAPI.put("allenmic", "allenmic", phoneNumber + "regId", regId);
 					}
 					else{
-						Log.d("registerGCM", regId + " is already on the server");
+						//Log.d("registerGCM", regId + " is already on the server");
 					}
 				}
 				return null;

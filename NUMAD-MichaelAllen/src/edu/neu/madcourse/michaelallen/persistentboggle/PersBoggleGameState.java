@@ -2,6 +2,7 @@ package edu.neu.madcourse.michaelallen.persistentboggle;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.graphics.Rect;
 
@@ -38,6 +39,9 @@ public class PersBoggleGameState{
 	
 	@Expose
 	public String foundWords = "";
+	
+	@Expose
+	public long timeStarted;
 	
 	
 }

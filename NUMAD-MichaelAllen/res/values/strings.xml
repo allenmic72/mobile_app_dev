@@ -37,7 +37,7 @@
         I got my inspiration for the method of splitting the dictionary by prefix through Piazza
     </string>
     <string name="boggle_high_scores_label">High Scores</string>
-    <string name="boggle_rules_label">Scoring rules</string>
+    <string name="boggle_rules_label">Rules and Info</string>
     <string name="boggle_rules_text">The scoring for correct unique words is based on the word\'s length \n\n
         If the word less than three characters, no points will be awarded\n
         If the word is 3 or 4 characters long, one point will be awarded\n
@@ -56,7 +56,32 @@
     <string name="pers_boggle_radio_sync">Synchronous Mode</string>
     <string name="pers_boggle_radio_async">Asynchronous Mode</string>
     <string name="pers_boggle_game_paused_overlay">Game Paused</string>
-    
+    <string name="pers_boggle_acknowledgements">Sources: The three mp3 files I used for sound effects were from a forum
+        I found by googling sound effects. The forum link is http://modmyi.com/forums. I got the graphics
+        for the boggle board at this site: http://www.dibbus.com/2011/03/9patch-images-in-android/ \n
+        I found some buttons that I used on most of the screens here: 
+        http://android9patch.blogspot.com/2011/09/android-9-patch-pack-18-button-series.html?m=1\n\n                                
+        
+        Code: I didn\'t use anyone else\'s code directly (except Sudoku code)
+        but the colors from some XML backgrounds were found online   \n\n             
+        
+        People: Thanks to Prof Intille and Mansoor. 
+        Also, thanks to my fellow classmates who contributed on Piazza.
+        I got my inspiration for the method of splitting the dictionary by prefix through Piazza
+   </string>
+   <string name="pers_boggle_rules">To play Persistent Boggle, challenge a user to a sync or async game. 
+       A sync game will be in real time with the same board for each user, whereas an async game is turn based with a 
+       new board every turn. A sync game can be switched to async when one user exits the game while it is in progress.
+       Sync games are synchronized using each phone\'s clock, so the game will generally never be perfectly synchronized
+       \n\n
+       Scoring:
+       The scoring for correct unique words is based on the word\'s length \n\n
+        If the word less than three characters, no points will be awarded\n
+        If the word is 3 or 4 characters long, one point will be awarded\n
+        If the word is over four characters long, one point will be awarded,\n
+        \t plus an additional point for every character over the first four\n
+        \n Example: pizza would yield two points \n</string>
+        
    <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>
    <string name="new_game_label">New Game</string>
@@ -82,11 +107,11 @@
    
    <string name="about_title">About Android Sudoku</string>
    <string name="about_text">\
-Sudoku is a logic-based number placement puzzle.
-Starting with a partially completed 9x9 grid, the
-objective is to fill the grid so that each
-row, each column, and each of the 3x3 boxes
-(also called <i>blocks</i>) contains the digits
-1 to 9 exactly once.
+		Sudoku is a logic-based number placement puzzle.
+		Starting with a partially completed 9x9 grid, the
+		objective is to fill the grid so that each
+		row, each column, and each of the 3x3 boxes
+		(also called <i>blocks</i>) contains the digits
+		1 to 9 exactly once.
 	</string>
 </resources>

@@ -5,12 +5,14 @@
     android:layout_height="fill_parent"
     android:background="@color/puzzle_dark"
     android:gravity="center"
-    android:typeface="serif">
+    android:typeface="serif"
+    android:padding="10dp">
 	<TextView
 	   android:id="@+id/pers_boggle_acknowledgements_textview"
 	   android:layout_width="wrap_content"
 	   android:layout_height="wrap_content"
-	   android:text="@string/acknowledgements_text" />
+	   android:text="@string/pers_boggle_acknowledgements"
+	   android:textSize="11sp" />
 	   
 	<Button
       android:id="@+id/pers_boggle_ack_quit"       

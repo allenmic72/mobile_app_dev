@@ -32,17 +32,17 @@ public class GCMServlet {
 					if (mes != null){
 						try {
 							Result result = sender.send(mes, regId, 5);
-							Log.d("GCMServlet", "Sending message to " + regId);
+							//Log.d("GCMServlet", "Sending message to " + regId);
 							return result;
 						} catch (IOException e) {
-							Log.d("GCMServlet", "IOException when sending message: " + e);
+							//Log.d("GCMServlet", "IOException when sending message: " + e);
 						}
 					}
 					return null;
 				}
 				
 				 protected void onPostExecute(Result result) {
-			         Log.d("GCMServlet", "" + result);
+			         //Log.d("GCMServlet", "" + result);
 			     }
 				
 			};
@@ -64,17 +64,17 @@ public class GCMServlet {
 				if (mes != null){
 					try {
 						Result result = sender.send(mes, regId, 50);
-						Log.d("GCMServlet", "Sending message to " + regId);
+						//Log.d("GCMServlet", "Sending message to " + regId);
 						return result;
 					} catch (IOException e) {
-						Log.e("GCMServlet", "IOException when sending message: " + e);
+						//Log.e("GCMServlet", "IOException when sending message: " + e);
 					}
 				}
 				return null;
 			}
 			
 			 protected void onPostExecute(Result result) {
-		         Log.d("GCMServlet", "GCM send result:::: " + result);
+		        // Log.d("GCMServlet", "GCM send result:::: " + result);
 		     }
 			
 		};

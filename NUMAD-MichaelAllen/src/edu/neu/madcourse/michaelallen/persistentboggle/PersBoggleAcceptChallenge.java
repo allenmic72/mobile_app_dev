@@ -3,6 +3,8 @@ package edu.neu.madcourse.michaelallen.persistentboggle;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.google.android.gcm.server.Message;
+import com.google.android.gcm.server.Message.Builder;
 import com.google.gson.Gson;
 
 import edu.neu.madcourse.michaelallen.R;
@@ -88,9 +90,24 @@ public class PersBoggleAcceptChallenge extends Activity implements OnClickListen
 		case R.id.pers_boggle_accept_challenge:
 			Intent i = checkRadioAndCreateProperIntent();
 			if (i != null){
-				Log.d("Acceptchallenge", i.getExtras().getString("status"));
-				startActivity(i);
-				finish();
+				//Log.d("Acceptchallenge", i.getExtras().getString("status"));
+				if (i.getExtras().getString("status").equals("sync")){
+					if (!PersGlobals.getGlobals().canAccessNetwok(this)){
+						CharSequence toastText = "Can't connect to opponent. Please check network connection";
+						Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+					}
+					else{
+						CharSequence toastText = "Starting sync game...";
+						Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+						startActivity(i);
+						finish();
+					}
+				}
+				else{
+					startActivity(i);
+					finish();
+				}
+				
 			}
 			else{
 				CharSequence toastText = "Please select a game mode";
@@ -98,7 +115,12 @@ public class PersBoggleAcceptChallenge extends Activity implements OnClickListen
 			}
 			break;
 		case R.id.pers_boggle_decline:
-			//TODO
+			GCMServlet serv = new GCMServlet();
+	        Builder mesBuilder = new Message.Builder();
+	        mesBuilder.addData("type", "declined");
+	        if (oppRegId != null && oppRegId != ""){
+	        	serv.sendAsyncMessage(mesBuilder.build(), oppRegId);
+	        }
 			finish();
 			break;
 		}

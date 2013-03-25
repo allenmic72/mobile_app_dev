@@ -30,7 +30,7 @@ public class PersBoggleGCMHandler{
 			processMessage();
 		}
 		else{
-			Log.d("GCMHandler", "Error: invalid GCM. No Extras");
+			//Log.d("GCMHandler", "Error: invalid GCM. No Extras");
 		}
 	}
 	
@@ -45,7 +45,7 @@ public class PersBoggleGCMHandler{
 			return extras.getString(key);
 		}
 		else{
-			Log.d("GCMHandler", "Error: Expected GCM with extra: " + key);
+			//Log.d("GCMHandler", "Error: Expected GCM with extra: " + key);
 			return null;
 		}
 	}
@@ -58,10 +58,16 @@ public class PersBoggleGCMHandler{
 			setAsyncTurnNotification();
 		}
 		else if (type.equals("declined")){
-			//TODO
+			try{
+				PersGlobals.getGlobals().cancelWaitTask();
+				Log.d("GCMHandler", "canceling wait task");
+			}
+			catch(Exception E){
+				
+			}
 		}
 		else {
-			Log.d("GCMHandler", "Error: invalid GCM type recieved: " + type);
+			//Log.d("GCMHandler", "Error: invalid GCM type recieved: " + type);
 		}
 	}
 	

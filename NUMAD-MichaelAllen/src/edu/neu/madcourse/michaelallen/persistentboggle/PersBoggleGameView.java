@@ -441,7 +441,7 @@ public class PersBoggleGameView extends View {
 		int size = PersGlobals.getGlobals().getNumberOfBlocks();
 		int[][] matrix = new int[size][size];
 		
-		Log.d(TAG, "selected blocks: " + selectedBlocks);
+		//Log.d(TAG, "selected blocks: " + selectedBlocks);
 		
 		for (int i = 0; i < selectedBlocks.size(); i++){
 			Rect r = selectedBlocks.get(i);
@@ -535,12 +535,12 @@ public class PersBoggleGameView extends View {
 	private void resetOtherUserBlocks(){//reset the opponent selected blocks
 		for(int i = 0; i < goodOtherUserBlocks.size(); i++){						
 			Rect xy = goodOtherUserBlocks.get(i);
-			Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
+			//Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
 			postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
 		}
 		for(int i = 0; i < badOtherUserBlocks.size(); i++){						
 			Rect xy = badOtherUserBlocks.get(i);
-			Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
+			//Log.d("", "invaliding blocks again at " + xy.left + " " + xy.top);
 			postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
 		}
 		goodOtherUserBlocks.clear();
@@ -558,14 +558,14 @@ public class PersBoggleGameView extends View {
 				for (int y = 0; y < PersGlobals.getGlobals().getNumberOfBlocks(); y++){
 					int blockAtXY = opponentSelection[x][y];
 					if (blockAtXY == 1 || blockAtXY == -1){
-						Log.d(TAG, "going to invalidate at " + x + " " + y);
+						//Log.d(TAG, "going to invalidate at " + x + " " + y);
 						//change rect dimensions from normalized blocks to pixels
 						Rect xy = new Rect();
 						xy.top = y * blockWidth;
 						xy.bottom = (y + 1) * blockWidth;
 						xy.left = x * blockWidth;
 						xy.right = (x + 1) * blockWidth;
-						Log.d(TAG, "animating opponent selection at " + xy.left + ", " + xy.top);
+						//Log.d(TAG, "animating opponent selection at " + xy.left + ", " + xy.top);
 						postInvalidate(xy.left, xy.top, xy.right, xy.bottom);
 						if (blockAtXY == 1){
 							goodOtherUserBlocks.add(xy);

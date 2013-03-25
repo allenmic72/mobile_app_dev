@@ -19,7 +19,7 @@ public class PersBogglePutKeyValToServer extends AsyncTask <String, Void, Void>{
 		if (canAccessServer()){
 			KeyValueAPI.put(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
 					key, val);
-			Log.d("putkeyval", "putting val " + val + " for key " + key);
+			//Log.d("putkeyval", "putting val " + val + " for key " + key);
 		}
 		else{
 			//TODO no server access what to do

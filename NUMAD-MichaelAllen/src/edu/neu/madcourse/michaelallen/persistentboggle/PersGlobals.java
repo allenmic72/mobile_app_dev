@@ -60,6 +60,8 @@ public class PersGlobals{
 	private String status = "";
 	private String opponentPriorWordString = "";
 	
+	private waitUntilUserAcceptsChallenge waitTask;
+	
 	private static class GlobalHolder{
 		private static final PersGlobals INSTANCE = new PersGlobals();
 	}
@@ -320,6 +322,17 @@ public class PersGlobals{
 	  	else{
 		  return false;
 	  	}
+	}
+	
+	public void setWaitTask(waitUntilUserAcceptsChallenge t){
+		waitTask = t;
+	}
+	
+	public void cancelWaitTask(){
+		if (waitTask != null){
+			waitTask.cancel(true);
+		}
+		
 	}
 	
 	public static PersGlobals getGlobals(){

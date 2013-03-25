@@ -74,7 +74,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 									String phoneNumber = tm.getLine1Number();
 									KeyValueAPI.put("allenmic", "allenmic", phoneNumber + "regId", regId);
 									PersGlobals.getGlobals().getSharedPrefName();
-									Log.d(TAG, "registered and put id: " + regId + " on server");
+									//Log.d(TAG, "registered and put id: " + regId + " on server");
 								}
 							}
 							return null;

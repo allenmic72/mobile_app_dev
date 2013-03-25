@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 import com.google.gson.Gson;
@@ -55,6 +57,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	AsyncTask<String, Integer, String> pollingServer;
 	boolean quit = false;
 	boolean over = false;
+	long timeStarted = 0;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -142,17 +145,21 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			timerTextView.setText("" + min + ":" + sec);
 		}*/
 		else if (leader){ //sync
-			Log.d(TAG, "starting game as leader");
+			//Log.d(TAG, "starting game as leader");
 			PersGlobals.getGlobals().resetAllVariables();
 			populateBoardWithLetters();
 			PersBoggleGameState state = new PersBoggleGameState();
 			state.gameStatus = status;
 			state.timerVal = PersGlobals.getGlobals().getTimerVal();
 			state.boardLetters = PersGlobals.getGlobals().getBoard();
+			timeStarted = Calendar.getInstance().getTime().getTime();
+			//Log.e(TAG, "time started: " + timeStarted);
+			state.timeStarted = timeStarted;
 			
 			String json = gson.toJson(state);
 			PersBogglePutKeyValToServer publishGameToOpponent = new PersBogglePutKeyValToServer();
 			publishGameToOpponent.execute(PersGlobals.getGlobals().getUsername() + opponent, json);
+			
 		}
 		else{ //sync not leader
 			String state = getIntent().getStringExtra("state");
@@ -166,7 +173,10 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			PersGlobals.getGlobals().setBoard(gameState.boardLetters);
 			PersGlobals.getGlobals().setStatus(gameState.gameStatus);
 			PersGlobals.getGlobals().setTimerVal(gameState.timerVal);
-			Log.d(TAG, "Starting " + gameState.gameStatus + " game against " + opponent + " with state: " + state);
+			//Log.d(TAG, "Starting " + gameState.gameStatus + " game against " + opponent + " with state: " + state);
+			timeStarted = gameState.timeStarted;
+			Log.e(TAG, "not leader time started: " + timeStarted);
+			
 		}
 		/*
 		int[][] test = new int[5][5];
@@ -202,16 +212,25 @@ public class PersBoggleGame extends Activity implements OnClickListener{
        super.onResume();
        PersGlobals.getGlobals().initSoundPool(this);
        if(!PersGlobals.getGlobals().getIsPaused()){
-    	   PersGlobals.getGlobals().setTimer(makeTimer(PersGlobals.getGlobals().getTimerVal()));
-    	   if (status.equals("sync")){
-   			packageGameStateAndPublish("", "resume");
-   			Log.d(TAG, "here in onresume");
-   			startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this);
-   		}
+    	    if (status.equals("sync")){
+	   			//Log.d(TAG, "here in onresume");
+	   			if (timeStarted != 0){
+	   				syncGame(timeStarted);
+	   				timeStarted = 0;
+	   			}
+	   			else{
+	   				packageGameStateAndPublish("", "resume");
+	   			}
+	   			PersGlobals.getGlobals().setTimer(makeTimer(PersGlobals.getGlobals().getTimerVal()));
+	   			startPollingServer(PersGlobals.getGlobals().getOpponent() + PersGlobals.getGlobals().getUsername(), this);
+   			}
+    	    else{
+    	    	PersGlobals.getGlobals().setTimer(makeTimer(PersGlobals.getGlobals().getTimerVal()));
+    	    }
        }
        //start polling server looking at the key <opponentUsername>+<myUsername>
        if (opponent != null){
-    	   Log.d("Challenged game", "starting game against " + opponent);
+    	   //Log.d("Challenged game", "starting game against " + opponent);
        }
        
     }
@@ -221,6 +240,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
        super.onPause();
        PersGlobals.getGlobals().getSP().release();
        if (quit){
+    	   PersGlobals.getGlobals().clearTimer();
     	   try{
     		   pollingServer.cancel(true);
     	   }
@@ -328,23 +348,23 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		
 		if (type.equals("async")){
 			state.gameStatus = "async";
-			Log.d(TAG, "putting game with async status to server");
+			//Log.d(TAG, "putting game with async status to server");
 		}
 		else if (type.equals("pause")){
 			state.isPaused = true;
-			state.timerVal = PersGlobals.getGlobals().getTimerVal();
+			state.foundWords = null;
 			state.gameStatus = "sync";
 		}
 		else if (type.equals("resume")){
 			state.isPaused = false;
-			state.timerVal = PersGlobals.getGlobals().getTimerVal();
+			state.foundWords = null;
 			state.gameStatus = "sync";
 		}
 		else{
 			state.priorChosenWords = PersGlobals.getGlobals().getUserPriorWords();
 			state.gameStatus = "sync";
 			state.foundWords = chosenWords;
-			Log.d(TAG, "putting sync game to server");
+			//Log.d(TAG, "putting sync game to server");
 		}	
 		
 		myVersion++;
@@ -359,7 +379,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 	 * puts to key "username" + "opponent"
 	 */
 	private void publishChangesToServer(PersBoggleGameState gameState){
-		Log.d(TAG, "Combined prior words: " + PersGlobals.getGlobals().getCombinedPriorWords());
+		//Log.d(TAG, "Combined prior words: " + PersGlobals.getGlobals().getCombinedPriorWords());
 		new AsyncTask<PersBoggleGameState, Void, Void>(){
 
 			@Override
@@ -371,8 +391,8 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 					KeyValueAPI.put("allenmic", "allenmic", 
 							PersGlobals.getGlobals().getUsername() +
 							PersGlobals.getGlobals().getOpponent(), json);
-					Log.d(TAG, "putting new game state to " + PersGlobals.getGlobals().getUsername() +
-							PersGlobals.getGlobals().getOpponent());
+					//Log.d(TAG, "putting new game state to " + PersGlobals.getGlobals().getUsername() +
+						//	PersGlobals.getGlobals().getOpponent());
 				}
 				return null;
 			}
@@ -660,7 +680,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 		if (status.equals("async")){
 			scoreScreen.putExtra("regId", regId);
 			scoreScreen.putExtra("oppRegId", oppRegId);
-			Log.d(TAG, "going to score screen passing it the oppRegId: " + oppRegId);
+			//Log.d(TAG, "going to score screen passing it the oppRegId: " + oppRegId);
 		}
 		over = true;
 		startActivity(scoreScreen);
@@ -771,6 +791,8 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 				PersGlobals.getGlobals().setStatus("async");
 				status = "async";
 				switchPausedOrResumed(true);
+				leader = true;
+				PersGlobals.getGlobals().setLeader(true);
 				dialog.cancel();
 			}
 			
@@ -780,6 +802,8 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.cancel();
+				quit = true;
+				over = true;
 				finish();
 			}
 			
@@ -801,7 +825,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			@Override
 			protected String doInBackground(String... params) {
 				String key = params[0];
-				Log.d("PersBoggleGame", "Starting to poll server for " + key);
+				//Log.d("PersBoggleGame", "Starting to poll server for " + key);
 				String json;
 				PersBoggleGameState opponentGame;
 				Gson gson = new Gson();
@@ -834,7 +858,7 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 									return "async";
 								}
 								if(opponentGame.gameVersion > opponentVersion){
-									Log.d(TAG, "got new opponent state: " + json);
+									//Log.d(TAG, "got new opponent state: " + json);
 									
 									if (PersGlobals.getGlobals().getIsPaused() && !opponentGame.isPaused 
 										|| !PersGlobals.getGlobals().getIsPaused() && opponentGame.isPaused){
@@ -845,12 +869,13 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 										PersGlobals.getGlobals().setOpponentPriorWords(opponentGame.priorChosenWords);
 									}
 									
-									if (opponentGame.foundWords != ""){
+									if (opponentGame.foundWords != "" && opponentGame.foundWords != null){
 										PersGlobals.getGlobals().setOpponentPriorWordString(opponentGame.foundWords);
+										//Log.d(TAG, "opponent word string: " + opponentGame.foundWords);
 									}
 									
 									if (opponentGame.score > 0){
-										Log.d(TAG, "opponent score is now " + opponentGame.score);
+										//Log.d(TAG, "opponent score is now " + opponentGame.score);
 										publishProgress(opponentGame.score);
 										
 									}
@@ -892,6 +917,23 @@ public class PersBoggleGame extends Activity implements OnClickListener{
 			
 		};
 		pollingServer.execute(key);
+	}
+	
+	private void syncGame(long timeStarted){
+		Date currentTime = Calendar.getInstance().getTime();
+		long timePassed = currentTime.getTime() - timeStarted;
+		//Log.d(TAG, "current time: " + currentTime.getTime());
+		
+		//Log.d(TAG, "time passed: " + timePassed);
+		if (timePassed < 5000 && timePassed > 0){
+			
+			try {
+				Thread.sleep(5000 - timePassed);
+			} catch (InterruptedException e) {
+			}
+		}
+		//Log.d(TAG, "after thread sleep");
+		
 	}
 	
 

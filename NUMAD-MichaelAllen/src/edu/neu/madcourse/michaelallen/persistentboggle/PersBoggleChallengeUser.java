@@ -37,7 +37,7 @@ import android.widget.Toast;
 
 public class PersBoggleChallengeUser extends Activity implements OnClickListener{
 	
-	AsyncTask<String, Void, Void> waitUntilUserAccepts;
+	waitUntilUserAcceptsChallenge waitUntilUserAccepts;
 	CountDownTimer goForFiveMinutes;
 	
 	protected void onCreate(Bundle savedInstanceState) {    	
@@ -96,7 +96,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 					protected String[] doInBackground(Void... params) {
 						if (PersGlobals.getGlobals().canAccessNetwok(context) && KeyValueAPI.isServerAvailable()){
 							int modeChecked = mode.getCheckedRadioButtonId();
-							Log.d("Challenge", "button checked: " + modeChecked);
+							//Log.d("Challenge", "button checked: " + modeChecked);
 							String oppPhoneNum = KeyValueAPI.get("allenmic", "allenmic", opponent);		
 							
 							PersBoggleAsyncGameHelper asyncHelper = new PersBoggleAsyncGameHelper(context, oppPhoneNum);
@@ -112,7 +112,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 									String dateString = gson.toJson(date);
 									
 									
-									Log.d("challenge this num", "challenging " + oppPhoneNum);
+									//Log.d("challenge this num", "challenging " + oppPhoneNum);
 									GCMServlet serv = new GCMServlet();
 							        Builder mesBuilder = new Message.Builder();
 							        ///NOTE: username and opponent reversed here. These names are from the opponent's perspective
@@ -130,6 +130,7 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							        serv.sendMessage(mesBuilder.build(), oppPhoneNum);
 							       
 							        waitUntilUserAccepts = new waitUntilUserAcceptsChallenge(context);
+							        PersGlobals.getGlobals().setWaitTask(waitUntilUserAccepts);
 							        waitUntilUserAccepts.execute(opponent);
 							        return null;
 								}
@@ -140,19 +141,23 @@ public class PersBoggleChallengeUser extends Activity implements OnClickListener
 							}
 							
 						}
-						CharSequence toastText = "Please connect to the Internet before starting a game";
-				        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
-						this.cancel(true);
 						return null;
 					}
 					
 					 protected void onPostExecute(String[] regIds) {
 						 if (regIds == null){
 							 if (context != null){
-
-							        CharSequence toastText = "Sent request to " + opponent
-							        		+ ". If they accept, the game will start.";
-							        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+								 if (PersGlobals.getGlobals().canAccessNetwok(context)){
+									 CharSequence toastText = "Sent request to " + opponent
+								        		+ ". If they accept, the game will start.";
+								     Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+								 }
+								 else{
+									 CharSequence toastText = "Please connect to the Internet before starting a game";
+								     Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+								 }
+								 	
+							        
 						      }
 						 }
 						 else{
@@ -259,7 +264,7 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 		
 		
 		while(!this.isCancelled()){
-			Log.d("Waituntiluseraccepts", "still waiting, checking " + opponent + PersGlobals.getGlobals().getUsername());
+			//Log.d("Waituntiluseraccepts", "still waiting, checking " + opponent + PersGlobals.getGlobals().getUsername());
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -267,7 +272,7 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 			}
 			currentTime = Calendar.getInstance().getTimeInMillis();
 			if (currentTime - startTime > 300000){
-				this.cancel(true);
+				return null;
 			}
 			if (KeyValueAPI.isServerAvailable()){
 				if (oppPhoneNum.equals("")){
@@ -281,7 +286,7 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 				String gameState = KeyValueAPI.get("allenmic", "allenmic", opponent + PersGlobals.getGlobals().getUsername());
 				if (gameState != null && gameState != ""){
 					PersBoggleGameState state = gson.fromJson(gameState, PersBoggleGameState.class);
-					Log.d("Wait until user accepts", "got game state status : " + state.gameStatus);
+					//Log.d("Wait until user accepts", "got game state status : " + state.gameStatus);
 					Intent startGame = new Intent(c, PersBoggleGame.class);
 					startGame.putExtra("state", gameState);
 					startGame.putExtra("leader", false);
@@ -290,7 +295,7 @@ class waitUntilUserAcceptsChallenge extends AsyncTask<String, Void, Void>{
 					startGame.putExtra("regId", regId);
 					startGame.putExtra("oppRegId", oppRegId);
 					c.startActivity(startGame);
-					this.cancel(true);
+					return null;
 				}
 			}
 		}

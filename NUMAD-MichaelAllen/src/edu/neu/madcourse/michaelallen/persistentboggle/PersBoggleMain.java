@@ -139,7 +139,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 		String username = getUsernameFromSharedPref();
 		if (username != null){
 			PersGlobals.getGlobals().setUsername(username);
-			Log.d("MainActivity getUsername", "username is " + username);
+			//Log.d("MainActivity getUsername", "username is " + username);
 			
 			AsyncTask<String, Void, Void> addUsernameToArray = new addToArrayOfUsersOnServer(this);
 			addUsernameToArray.execute(username);
@@ -193,7 +193,7 @@ public class PersBoggleMain extends Activity implements OnClickListener{
 					
 				PersBoggleSharedPrefAPI spref = new PersBoggleSharedPrefAPI();
 				spref.putString(c, "username", username);
-				Log.d("promptUserForUsername", "saved username to sPref and Globals" + username);
+				//Log.d("promptUserForUsername", "saved username to sPref and Globals" + username);
 				
 				//Start a new game now that we have a username
 				Intent challengeUser = new Intent(c, PersBoggleChallengeUser.class);
@@ -230,7 +230,6 @@ class getUsernameFromServer extends AsyncTask<String, Void, String>{
 	@Override
 	protected String doInBackground(String... params) {
 		String phoneNumber = params[0];
-		
 		if (canAccessServer() && phoneNumber != null){
 			String username = KeyValueAPI.get(PersGlobals.getGlobals().getTeamName(), PersGlobals.getGlobals().getPassword(),
 					phoneNumber);
@@ -240,10 +239,10 @@ class getUsernameFromServer extends AsyncTask<String, Void, String>{
 					spref.putString(c, "username", username);
 				}
 				PersGlobals.getGlobals().setUsername(username);
-				Log.d("getUsername Server", "just got username from server: " + username);
+				//Log.d("getUsername Server", "just got username from server: " + username);
 			}
 			else{
-				Log.d("getUsername Server", "no username saved to server");
+				//Log.d("getUsername Server", "no username saved to server");
 			}
 		}
 		return null;
@@ -276,9 +275,9 @@ class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
 			Type type = new TypeToken<ArrayList<String>>(){}.getType();
 			
 			String jsonFromServer = KeyValueAPI.get("allenmic", "allenmic", "usernames");
-			Log.d("addToarray", "json array on server is " + jsonFromServer);					
+			//Log.d("addToarray", "json array on server is " + jsonFromServer);					
 			if (jsonFromServer == null || jsonFromServer == ""){ //first user to be added
-				Log.d("", "here");
+			//	Log.d("", "here");
 				ArrayList<String> newArray = new ArrayList<String>();
 				PersGlobals.getGlobals().setOtherUsers(newArray);
 				
@@ -317,7 +316,7 @@ class addToArrayOfUsersOnServer extends AsyncTask<String, Void, Void>{
 		Type type = new TypeToken<ArrayList<String>>(){}.getType();
 		String arrayJson = gson.toJson(oldArray, type);
 		
-		Log.d("addToArrayAndPutOnServer", "new array is ::: " + arrayJson);
+		//Log.d("addToArrayAndPutOnServer", "new array is ::: " + arrayJson);
 		
 		KeyValueAPI.put("allenmic", "allenmic", "usernames", arrayJson);
 	}
