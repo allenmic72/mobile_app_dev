@@ -112,10 +112,16 @@
             android:label="@string/pers_boggle_challenge_user_label"
             android:configChanges="orientation"
     		android:screenOrientation="portrait">
-        </activity>s
+        </activity>
         <activity
             android:name="edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleAcceptChallenge"
             android:label="@string/pers_boggle_accept_challenge_label"
+            android:configChanges="orientation"
+    		android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name="edu.neu.madcourse.michaelallen.project.SoapGUI"
+            android:label="@string/soap_main_label"
             android:configChanges="orientation"
     		android:screenOrientation="portrait">
         </activity>
@@ -141,6 +147,7 @@
 		</receiver>
 		
 		<service android:name=".GCMIntentService" />
+		<service android:name="edu.neu.madcourse.michaelallen.project.AccelerometerListenerService" />
     </application>
 
 </manifest>

@@ -82,7 +82,12 @@
         If the word is over four characters long, one point will be awarded,\n
         \t plus an additional point for every character over the first four\n
         \n Example: pizza would yield two points \n</string>
-        
+   
+   <string name="soap_main_button">Soap</string>
+   <string name="soap_start_service">Start Monitoring</string>
+   <string name="soap_main_label">Soap</string>
+   <string name="soap_kill_service">Stop Monitoring</string>
+   
    <string name="sudoku_title">Android Sudoku</string>
    <string name="continue_label">Continue</string>
    <string name="new_game_label">New Game</string>

@@ -15,6 +15,7 @@ import android.content.*;
 import edu.neu.madcourse.michaelallen.boggle.BoggleMain;
 import edu.neu.madcourse.michaelallen.boggle.Globals;
 import edu.neu.madcourse.michaelallen.persistentboggle.PersBoggleMain;
+import edu.neu.madcourse.michaelallen.project.SoapGUI;
 import edu.neu.madcourse.michaelallen.sudoku.Sudoku;
 import edu.neu.mobileClass.*;
 import edu.neu.mobileclass.apis.KeyValueAPI;
@@ -34,7 +35,7 @@ public class MainActivity extends Activity implements OnClickListener{
         
         
         //TODO: uncomment this
-        PhoneCheckAPI.doAuthorization(this);
+        //PhoneCheckAPI.doAuthorization(this);
 
         registerGCM();
         
@@ -57,6 +58,9 @@ public class MainActivity extends Activity implements OnClickListener{
         
         View persistentBoggleButton = findViewById(R.id.pers_boggle_main_button);
         persistentBoggleButton.setOnClickListener(this);
+        
+        View soapButton = findViewById(R.id.soap_gui_button);
+        soapButton.setOnClickListener(this);
         
         //registerReceiver(mHandleMessageReceiver, new IntentFilter("edu.neu.madcourse.michaelallen.DISPLAY_MESSAGE"));
         
@@ -106,6 +110,10 @@ public class MainActivity extends Activity implements OnClickListener{
 		 case R.id.pers_boggle_main_button:
 			 Intent persBoggleIntent = new Intent(this, PersBoggleMain.class);
 			 startActivity(persBoggleIntent);
+			 break;
+		 case R.id.soap_gui_button:
+			 Intent soapIntent = new Intent(this, SoapGUI.class);
+			 startActivity(soapIntent);
 			 break;
 		 }
 		

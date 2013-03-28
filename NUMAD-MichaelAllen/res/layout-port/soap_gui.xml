@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:padding="40dp">
+    
+    <TextView 
+        android:id="@+id/soap_title"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:text="@string/soap_main_label"
+        android:textSize="32sp"
+        android:textColor="@color/soap_title_color"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        />
+    
+    <Button 
+        android:id="@+id/soap_gui_start_service"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:text="@string/soap_start_service"
+        android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:layout_centerVertical="true"
+        />
+    
+    <Button 
+        android:id="@+id/soap_gui_kill_service"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:text="@string/soap_kill_service"
+        android:background="@drawable/button_selector"
+        android:shadowColor="@color/text_shadow"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:layout_below="@id/soap_gui_start_service"
+        />
+
+</RelativeLayout>
